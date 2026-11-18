@@ -117,6 +117,11 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 		case model.KubernetesResourceStateEvent_DELETED:
 			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnDeleted(snapshot.Kubernetes.Resources, ev)
 		}
+		// Advance the in-memory baseline to this event's version so that, within
+		// this same batch, an older or duplicate event for the same application
+		// (e.g. redelivered after a retry) is correctly recognized as stale and
+		// skipped by the check above instead of overwriting the newer state.
+		snapshot.Version = ev.SnapshotVersion
 	}
 
 	for applicationID, snapshot := range snapshots {
