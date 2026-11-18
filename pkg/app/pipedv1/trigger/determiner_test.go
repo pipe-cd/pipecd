@@ -140,6 +140,47 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			},
 			expected: false,
 		},
+		{
+			name:   "touched in app dir at repository root",
+			appDir: ".",
+			changedFiles: []string{
+				"deployment.yaml",
+			},
+			expected: true,
+		},
+		{
+			name:   "touched in app dir at repository root by nested file",
+			appDir: ".",
+			changedFiles: []string{
+				"app/demo/deployment.yaml",
+			},
+			expected: true,
+		},
+		{
+			name:   "touched in app dir at repository root given as empty path",
+			appDir: "",
+			changedFiles: []string{
+				"deployment.yaml",
+			},
+			expected: true,
+		},
+		{
+			name:   "app dir at repository root with changes listed in excluded",
+			appDir: ".",
+			excludes: []string{
+				"deployment.yaml",
+			},
+			changedFiles: []string{
+				"deployment.yaml",
+			},
+			expected: false,
+		},
+		{
+			name:         "app dir at repository root without changed files",
+			appDir:       ".",
+			changedFiles: []string{},
+			expected:     false,
+		},
 	}
 
 	for _, tc := range testcases {
