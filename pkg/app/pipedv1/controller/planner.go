@@ -206,7 +206,7 @@ func (p *planner) Run(ctx context.Context) error {
 	tds, err := targetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		p.logger.Error("error while preparing target deploy source data", zap.Error(err))
-		return err
+		return p.reportDeploySourceFailed(ctx, "target", err)
 	}
 	targetDS = tds.ToPluginDeploySource()
 
@@ -220,7 +220,7 @@ func (p *planner) Run(ctx context.Context) error {
 		rds, err := runningDSP.Get(ctx, io.Discard)
 		if err != nil {
 			p.logger.Error("error while preparing running deploy source data", zap.Error(err))
-			return err
+			return p.reportDeploySourceFailed(ctx, "running", err)
 		}
 		runningDS = rds.ToPluginDeploySource()
 	}
@@ -595,6 +595,18 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
 	}
 	return err
+}
+
+// reportDeploySourceFailed marks the deployment as failed because its deploy source
+// could not be prepared, e.g. the commit does not exist or the repository could not be cloned.
+// Without this, the deployment would stay PENDING and the application would stay deploying.
+func (p *planner) reportDeploySourceFailed(ctx context.Context, name string, err error) error {
+	// Piped is shutting down, so leave the deployment PENDING to plan it again after restarting.
+	if ctx.Err() != nil {
+		return err
+	}
+	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+	return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to prepare the %s deploy source (%v)", name, err))
 }
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
