@@ -563,3 +563,30 @@ func TestMatch(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchEmptyLabelValue(t *testing.T) {
+	t.Parallel()
+
+	m := newMatcher(config.NotificationRoute{Labels: map[string]string{"region": ""}})
+	testcases := []struct {
+		name   string
+		labels map[string]string
+		match  bool
+	}{
+		{name: "missing label key", labels: map[string]string{"environment": "test"}, match: false},
+		{name: "explicitly empty label", labels: map[string]string{"region": ""}, match: true},
+		{name: "different value", labels: map[string]string{"region": "west"}, match: false},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			event := model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+				Metadata: &model.NotificationEventDeploymentTriggered{
+					Deployment: &model.Deployment{Labels: tc.labels},
+				},
+			}
+			assert.Equal(t, tc.match, m.Match(event))
+		})
+	}
+}
