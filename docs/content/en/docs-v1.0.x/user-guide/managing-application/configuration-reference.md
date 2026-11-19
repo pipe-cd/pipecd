@@ -214,14 +214,12 @@ At least one of `name`, `kind`, or `labels` must be set.
 
 ## EventWatcherReplacement
 
-Only one of `yamlField`, `jsonField`, `HCLField`, or `regex` may be set alongside `file`.
+Only one of `yamlField` or `regex` may be set alongside `file`.
 
 | Field | Type | Description | Required |
 | --- | --- | --- | --- |
 | `file` | string | Path to the file to update. | Yes |
 | `yamlField` | string | YAML path to the field to update. Must start with `$`. e.g. `$.foo.bar[0].baz`. | No |
-| `jsonField` | string | JSON path to the field to update. | No |
-| `HCLField` | string | HCL path to the field to update. | No |
 | `regex` | string | Regular expression specifying what to replace. Only the first capturing group `()` is replaced. e.g. `host.xz/foo/bar:(v[0-9].[0-9].[0-9])`. | No |
 
 ## DriftDetection
