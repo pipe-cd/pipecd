@@ -29,7 +29,7 @@ type Store interface {
 	ListUnhandledCommands(ctx context.Context, pipedID string) ([]*model.Command, error)
 	AddCommand(ctx context.Context, command *model.Command) error
 	GetCommand(ctx context.Context, id string) (*model.Command, error)
-	UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, unhandledAt int64) error
+	UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error
 }
 
 type store struct {
@@ -103,15 +103,15 @@ func (s *store) GetCommand(ctx context.Context, id string) (*model.Command, erro
 	return dsResp, nil
 }
 
-func (s *store) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
-	if err := s.backend.UpdateStatus(ctx, id, status, metadata, handledAt); err != nil {
+func (s *store) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
+	if err := s.backend.UpdateCommandHandled(ctx, id, status, metadata, handledAt, handledReason); err != nil {
 		return err
 	}
 
 	cmd, err := s.backend.Get(ctx, id)
 	if err != nil {
 		s.logger.Error("failed to get command from datastore", zap.Error(err))
-		// The datastore was already updated by UpdateStatus above, so any
+		// The datastore was already updated by UpdateCommandHandled above, so any
 		// cache entry for this command (e.g. cached prior to the update) is
 		// now stale. Evict it so callers don't keep observing the old status
 		// until the TTL expires.
