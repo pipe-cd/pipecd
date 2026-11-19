@@ -10,9 +10,16 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  # Reports whether the pull request touches anything outside documentation.
+  changes:
+    uses: ./.github/workflows/changes.yaml
+
   code:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout repository
