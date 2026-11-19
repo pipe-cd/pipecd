@@ -13,6 +13,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  contents: read
+  pull-requests: read
+
 env:
   GO_VERSION: 1.26.2
   NODE_VERSION: 24.10.0
@@ -20,7 +24,14 @@ env:
   HELM_VERSION: 3.17.3
 
 jobs:
+  # Reports whether the pull request touches anything outside documentation.
+  # The output is empty on push/tag events so the jobs below always run there.
+  changes:
+    uses: ./.github/workflows/changes.yaml
+
   list-go-modules:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     outputs:
       modules: ${{ steps.list-go-modules.outputs.modules }}
@@ -55,15 +66,21 @@ jobs:
   go-lint-completed:
     runs-on: ubuntu-24.04
     if: always()
-    needs: go
+    needs: [changes, list-go-modules, go]
     steps:
       - name: Check if all go lint jobs succeeded
-        # if jobs in the 'go' job matrix failed or were cancelled, this job will fail
+        # if the 'changes', 'list-go-modules', or any job in the 'go' matrix failed or was cancelled, this job will fail
         # otherwise this job is marked as successful because all steps are skipped
         run: exit 1
-        if: needs.go.result != 'success'
+        if: >-
+          ${{
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+          }}
 
   web:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,6 +102,8 @@ jobs:
       - name: Run lint
         run: make lint/web
   helm:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -125,7 +144,10 @@ jobs:
     steps:
       - name: Check govulncheck status
         # Warn-only for now until vulnerabilities are fixed (see #6600)
-        # Change 'skipped' back to 'success' once fixed
         run: |
           echo "::warning::govulncheck found vulnerabilities - see issue #6600 for tracking"
-        if: needs.govulncheck.result != 'success'
+        if: >-
+          ${{
+               needs.govulncheck.result == 'failure'
+            || needs.govulncheck.result == 'cancelled'
+          }}
