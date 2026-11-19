@@ -16,6 +16,7 @@ package provider
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 
@@ -25,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 )
 
@@ -209,4 +211,69 @@ func TestTemplateRemoteChart(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "testapp-helloworld", name)
 	}
+}
+
+func createFakeHelm(t *testing.T) string {
+	t.Helper()
+	// This script acts as a fake Helm binary. It fails unless the secret is passed only via stdin.
+	script := `#!/bin/sh
+password_stdin=false
+for arg in "$@"; do
+  if [ "$arg" = "secret-password" ]; then
+    echo "Password leaked in argv!" >&2
+    exit 1
+  fi
+  if [ "$arg" = "--password-stdin" ]; then
+    password_stdin=true
+  fi
+done
+if [ "$password_stdin" != "true" ]; then
+  echo "Missing --password-stdin!" >&2
+  exit 1
+fi
+password=$(cat)
+if [ "$password" != "secret-password" ]; then
+  echo "Password was not provided via stdin!" >&2
+  exit 1
+fi
+exit 0
+`
+	f, err := os.CreateTemp("", "fake-helm-*")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	if _, err := f.WriteString(script); err != nil {
+		t.Fatalf("failed to write script: %v", err)
+	}
+	if err := f.Chmod(0755); err != nil {
+		t.Fatalf("failed to chmod: %v", err)
+	}
+	f.Close()
+	return f.Name()
+}
+
+func TestLoginToOCIRegistry_PasswordUsesStdin(t *testing.T) {
+	t.Parallel()
+	fakeHelmPath := createFakeHelm(t)
+	defer os.Remove(fakeHelmPath)
+
+	h := NewHelm(fakeHelmPath, zaptest.NewLogger(t))
+	err := h.LoginToOCIRegistry(t.Context(), "address", "user", "secret-password")
+	assert.NoError(t, err)
+}
+
+func TestAddRepository_PasswordUsesStdin(t *testing.T) {
+	t.Parallel()
+	fakeHelmPath := createFakeHelm(t)
+	defer os.Remove(fakeHelmPath)
+
+	h := NewHelm(fakeHelmPath, zaptest.NewLogger(t))
+	repo := config.HelmChartRepository{
+		Name:     "my-repo",
+		Address:  "http://my-repo",
+		Username: "user",
+		Password: "secret-password",
+	}
+	err := h.AddRepository(t.Context(), repo)
+	assert.NoError(t, err)
 }
