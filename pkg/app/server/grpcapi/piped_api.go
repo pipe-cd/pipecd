@@ -220,6 +220,12 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 		return nil, err
 	}
 	opts := datastore.ListOptions{
+		Orders: []datastore.Order{
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
+		},
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -237,9 +243,12 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 				Value:    false,
 			},
 		},
+		Limit: listApplicationsPageSize,
 	}
-	// TODO: Support pagination in ListApplications
-	apps, _, err := a.applicationStore.List(ctx, opts)
+	// Page through the datastore so a large project cannot be served by one
+	// unbounded query. The RPC response has no cursor field, so all pages are
+	// aggregated here before returning.
+	apps, err := listAllApplications(ctx, a.applicationStore, opts)
 	if err != nil {
 		return nil, gRPCStoreError(err, "fetch applications")
 	}
@@ -720,7 +729,6 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 
 	// Try to fetch the most recently registered event that has the given parameters.
 	opts := datastore.ListOptions{
-		Limit: 1,
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -748,6 +756,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 				Direction: datastore.Asc,
 			},
 		},
+		Limit: 1,
 	}
 	events, _, err := a.eventStore.List(ctx, opts)
 	if err != nil {
@@ -815,6 +824,19 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		})
 	}
 	switch req.Order {
+	case pipedservice.ListOrder_NONE:
+		// Cursor paging requires a stable order; default to newest first
+		// when the request does not specify one.
+		opts.Orders = []datastore.Order{
+			{
+				Field:     "CreatedAt",
+				Direction: datastore.Desc,
+			},
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
+		}
 	case pipedservice.ListOrder_ASC:
 		opts.Orders = []datastore.Order{
 			{
@@ -837,9 +859,12 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 				Direction: datastore.Asc,
 			},
 		}
+	default:
+		return nil, status.Errorf(codes.InvalidArgument, "unknown order %v given", req.Order)
 	}
+	opts.Limit = listEventsPageSize
 
-	events, _, err := a.eventStore.List(ctx, opts)
+	events, err := listAllEvents(ctx, a.eventStore, opts)
 	if err != nil {
 		return nil, gRPCStoreError(err, "list events")
 	}
@@ -1002,9 +1027,17 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 		// TODO: Support find node apps by appLabels.
 
-		apps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
+		opts := datastore.ListOptions{
 			Filters: filters,
-		})
+			Orders: []datastore.Order{
+				{
+					Field:     "Id",
+					Direction: datastore.Asc,
+				},
+			},
+			Limit: listApplicationsPageSize,
+		}
+		apps, err := listAllApplications(ctx, a.applicationStore, opts)
 		if err != nil {
 			return nil, nil, err
 		}
