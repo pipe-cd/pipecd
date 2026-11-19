@@ -200,9 +200,12 @@ func newDeployTargetResources(deployTarget string) *deployTargetResources {
 // we cannot determine the application ID of the child resources.
 // So we have to initialize the store after the first sync.
 func (s *deployTargetResources) initialize() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	for _, manifest := range s.resources {
-		if appID, ok := s.getApplicationIDByResource(manifest); ok {
-			s.getApplicationResources(appID).addResource(manifest)
+		if appID, ok := s.getApplicationIDByResourceLocked(manifest); ok {
+			s.getApplicationResourcesLocked(appID).addResource(manifest)
 		}
 	}
 
@@ -210,13 +213,13 @@ func (s *deployTargetResources) initialize() {
 	removedResources := make([]provider.Manifest, 0, len(s.resources))
 
 	for _, manifest := range s.resources {
-		if _, ok := s.getApplicationIDByResource(manifest); !ok {
+		if _, ok := s.getApplicationIDByResourceLocked(manifest); !ok {
 			removedResources = append(removedResources, manifest)
 		}
 	}
 
 	for _, resource := range removedResources {
-		s.removeResource(resource)
+		s.removeResourceLocked(resource)
 	}
 }
 
@@ -232,7 +235,11 @@ func (s *deployTargetResources) getApplicationResources(appID string) *applicati
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	app, ok = s.applications[appID]
+	return s.getApplicationResourcesLocked(appID)
+}
+
+func (s *deployTargetResources) getApplicationResourcesLocked(appID string) *applicationResources {
+	app, ok := s.applications[appID]
 	if !ok {
 		app = newApplicationResources(s.deployTarget)
 		s.applications[appID] = app
@@ -241,15 +248,12 @@ func (s *deployTargetResources) getApplicationResources(appID string) *applicati
 	return app
 }
 
-// getApplicationIDByResource returns the application ID by the resource.
-func (s *deployTargetResources) getApplicationIDByResource(resource provider.Manifest) (string, bool) {
+// getApplicationIDByResourceLocked returns the application ID by the resource.
+func (s *deployTargetResources) getApplicationIDByResourceLocked(resource provider.Manifest) (string, bool) {
 	appID := resource.ApplicationID()
 	if appID != "" {
 		return appID, true
 	}
-
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 
 	if manifest, ok := s.resources[resource.UID()]; ok && manifest.ApplicationID() != "" {
 		return manifest.ApplicationID(), true
@@ -268,25 +272,31 @@ func (s *deployTargetResources) getApplicationIDByResource(resource provider.Man
 
 // addResource adds a resource to the store.
 func (s *deployTargetResources) addResource(resource provider.Manifest) {
-	if appID, ok := s.getApplicationIDByResource(resource); ok {
-		s.getApplicationResources(appID).addResource(resource)
-	}
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.addResourceLocked(resource)
+}
+
+func (s *deployTargetResources) addResourceLocked(resource provider.Manifest) {
+	if appID, ok := s.getApplicationIDByResourceLocked(resource); ok {
+		s.getApplicationResourcesLocked(appID).addResource(resource)
+	}
 	s.resources[resource.UID()] = resource
 }
 
 // removeResource removes a resource from the store.
 func (s *deployTargetResources) removeResource(resource provider.Manifest) {
-	if appID, ok := s.getApplicationIDByResource(resource); ok {
-		s.getApplicationResources(appID).removeResource(resource)
-	}
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.removeResourceLocked(resource)
+}
+
+func (s *deployTargetResources) removeResourceLocked(resource provider.Manifest) {
+	if appID, ok := s.getApplicationIDByResourceLocked(resource); ok {
+		s.getApplicationResourcesLocked(appID).removeResource(resource)
+	}
 	delete(s.resources, resource.UID())
 }
 
@@ -304,8 +314,11 @@ func (s *deployTargetResources) onAdd(resource provider.Manifest) {
 
 // onUpdate updates a resource in the store.
 func (s *deployTargetResources) onUpdate(old, new provider.Manifest) {
-	s.removeResource(old)
-	s.addResource(new)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.removeResourceLocked(old)
+	s.addResourceLocked(new)
 }
 
 // onDelete removes a resource from the store.
