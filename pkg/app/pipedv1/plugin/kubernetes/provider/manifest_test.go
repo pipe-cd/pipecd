@@ -1655,3 +1655,56 @@ func TestFromStructuredObject(t *testing.T) {
 		})
 	}
 }
+
+func TestManifest_StrictAPIGroup(t *testing.T) {
+	t.Parallel()
+
+	newManifest := func(group, kind string) Manifest {
+		u := &unstructured.Unstructured{}
+		u.SetGroupVersionKind(schema.GroupVersionKind{
+			Group:   group,
+			Version: "v1",
+			Kind:    kind,
+		})
+		return Manifest{body: u}
+	}
+
+	tests := []struct {
+		name  string
+		group string
+		kind  string
+		check func(Manifest) bool
+		want  bool
+	}{
+		{"Service in core group", "", KindService, Manifest.IsService, true},
+		{"Service in apps group", "apps", KindService, Manifest.IsService, false},
+		{"Pod in core group", "", KindPod, Manifest.IsPod, true},
+		{"Pod in apps group", "apps", KindPod, Manifest.IsPod, false},
+		{"Secret in core group", "", KindSecret, Manifest.IsSecret, true},
+		{"Secret in apps group", "apps", KindSecret, Manifest.IsSecret, false},
+		{"ConfigMap in core group", "", KindConfigMap, Manifest.IsConfigMap, true},
+		{"ConfigMap in apps group", "apps", KindConfigMap, Manifest.IsConfigMap, false},
+		{"Deployment in apps group", "apps", KindDeployment, Manifest.IsDeployment, true},
+		{"Deployment in core group", "", KindDeployment, Manifest.IsDeployment, false},
+		{"Deployment in batch group", "batch", KindDeployment, Manifest.IsDeployment, false},
+		{"StatefulSet in apps group", "apps", KindStatefulSet, Manifest.IsStatefulSet, true},
+		{"StatefulSet in core group", "", KindStatefulSet, Manifest.IsStatefulSet, false},
+		{"ReplicaSet in apps group", "apps", KindReplicaSet, Manifest.IsReplicaSet, true},
+		{"ReplicaSet in core group", "", KindReplicaSet, Manifest.IsReplicaSet, false},
+		{"DaemonSet in apps group", "apps", KindDaemonSet, Manifest.IsDaemonSet, true},
+		{"DaemonSet in core group", "", KindDaemonSet, Manifest.IsDaemonSet, false},
+		{"Job in batch group", "batch", KindJob, Manifest.IsJob, true},
+		{"Job in apps group", "apps", KindJob, Manifest.IsJob, false},
+		{"CronJob in batch group", "batch", KindCronJob, Manifest.IsCronJob, true},
+		{"CronJob in apps group", "apps", KindCronJob, Manifest.IsCronJob, false},
+		{"Workload with Deployment in core group", "", KindDeployment, Manifest.IsWorkload, false},
+		{"Workload with Pod in apps group", "apps", KindPod, Manifest.IsWorkload, false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tc.want, tc.check(newManifest(tc.group, tc.kind)))
+		})
+	}
+}
