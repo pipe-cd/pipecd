@@ -148,7 +148,7 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
+            <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
             <Button
               type="submit"
               color="primary"
