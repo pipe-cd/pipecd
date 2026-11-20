@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { ResourceState } from "~~/model/application_live_state_pb";
 import DeployTargetTabBar from "./deploy-target-tab-bar";
@@ -30,16 +30,18 @@ export const LiveStateView: FC<Props> = ({ resources: allResources }) => {
     [resourcesByDeployTarget]
   );
 
-  useEffect(() => {
-    if (deployTargetTabSelected == "" && deployTargetList.length > 0) {
-      setDeployTargetTabSelected(deployTargetList[0]);
-    }
-  }, [deployTargetList, deployTargetTabSelected]);
+  // Fall back to the first deploy target when nothing is selected yet, or when
+  // the selected one is no longer in the live state (e.g. after a refresh).
+  const selectedDeployTarget = deployTargetList.includes(
+    deployTargetTabSelected
+  )
+    ? deployTargetTabSelected
+    : deployTargetList[0] ?? "";
 
   const resources = useMemo(() => {
-    if (!deployTargetTabSelected) return [];
-    return resourcesByDeployTarget[deployTargetTabSelected];
-  }, [deployTargetTabSelected, resourcesByDeployTarget]);
+    if (!selectedDeployTarget) return [];
+    return resourcesByDeployTarget[selectedDeployTarget];
+  }, [selectedDeployTarget, resourcesByDeployTarget]);
 
   return (
     <Box
@@ -54,13 +56,13 @@ export const LiveStateView: FC<Props> = ({ resources: allResources }) => {
       <Box sx={{ position: "absolute", left: 0, top: 0, zIndex: 100 }}>
         <DeployTargetTabBar
           tabs={deployTargetList}
-          selectedTab={deployTargetTabSelected}
+          selectedTab={selectedDeployTarget}
           onSelectTab={setDeployTargetTabSelected}
         />
       </Box>
 
-      {deployTargetTabSelected && (
-        <GraphView key={deployTargetTabSelected} resources={resources} />
+      {selectedDeployTarget && (
+        <GraphView key={selectedDeployTarget} resources={resources} />
       )}
     </Box>
   );

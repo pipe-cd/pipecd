@@ -33,3 +33,40 @@ test("filter resources on tab kubernetes", async () => {
 
   expect(screen.queryAllByTestId("application-resource")).toHaveLength(2);
 });
+
+test("show a remaining deploy target when the selected one disappears", () => {
+  const { rerender } = render(
+    <LiveStateView resources={resourcesApplicationList} />,
+    {}
+  );
+  expect(screen.getByRole("tab", { name: "kubernetes" })).toHaveAttribute(
+    "aria-selected",
+    "true"
+  );
+
+  rerender(
+    <LiveStateView
+      resources={resourcesApplicationList.filter(
+        (r) => r.deployTarget !== "kubernetes"
+      )}
+    />
+  );
+
+  expect(screen.getByRole("tab", { name: "local" })).toHaveAttribute(
+    "aria-selected",
+    "true"
+  );
+  expect(screen.queryAllByTestId("application-resource")).toHaveLength(2);
+});
+
+test("render nothing when every deploy target disappears", () => {
+  const { rerender } = render(
+    <LiveStateView resources={resourcesApplicationList} />,
+    {}
+  );
+
+  rerender(<LiveStateView resources={[]} />);
+
+  expect(screen.queryAllByRole("tab")).toHaveLength(0);
+  expect(screen.queryAllByTestId("application-resource")).toHaveLength(0);
+});
