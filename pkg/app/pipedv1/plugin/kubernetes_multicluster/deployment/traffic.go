@@ -122,7 +122,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 	}
 	results := make([]targetResult, len(targetConfigs))
 
-	eg, ctx := errgroup.WithContext(ctx)
+	var eg errgroup.Group
 	for i, tc := range targetConfigs {
 		eg.Go(func() error {
 			lp.Infof("Start updating traffic routing on target %s", tc.deployTarget.Name)
@@ -266,7 +266,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 	}
 	results := make([]targetResult, len(targetConfigs))
 
-	eg, ctx := errgroup.WithContext(ctx)
+	var eg errgroup.Group
 	for i, tc := range targetConfigs {
 		eg.Go(func() error {
 			lp.Infof("Start updating Istio traffic routing on target %s", tc.deployTarget.Name)
@@ -319,12 +319,15 @@ func (p *Plugin) istioTrafficRouting(
 		return fmt.Errorf("no kubernetes manifests found")
 	}
 
+	istioCfg := appCfg.TrafficRouting.Istio
+	if istioCfg == nil {
+		istioCfg = &kubeconfig.IstioTrafficRouting{}
+	}
+
 	// Determine which VirtualService to use: from Istio config or fall back to service reference.
-	var vsRef kubeconfig.K8sResourceReference
-	if appCfg.TrafficRouting != nil && appCfg.TrafficRouting.Istio != nil && appCfg.TrafficRouting.Istio.VirtualService.Name != "" {
-		vsRef = appCfg.TrafficRouting.Istio.VirtualService
-	} else {
-		vsRef = appCfg.Service
+	vsRef := appCfg.Service
+	if istioCfg.VirtualService.Name != "" {
+		vsRef = istioCfg.VirtualService
 	}
 
 	virtualServices, err := findIstioVirtualServiceManifests(manifests, vsRef)
@@ -340,8 +343,8 @@ func (p *Plugin) istioTrafficRouting(
 
 	vs, err := generateVirtualServiceManifest(
 		virtualServices[0],
-		appCfg.Service.Name,
-		appCfg.TrafficRouting.Istio.EditableRoutes,
+		cmp.Or(istioCfg.Host, appCfg.Service.Name),
+		istioCfg.EditableRoutes,
 		appCfg.VariantLabel,
 		canaryPercent,
 		baselinePercent,

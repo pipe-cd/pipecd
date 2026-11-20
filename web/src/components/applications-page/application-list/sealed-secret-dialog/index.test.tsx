@@ -32,13 +32,13 @@ test("render", () => {
   expect(screen.getByText(dummyApplication.name)).toBeInTheDocument();
 });
 
-test("cancel", () => {
+test("cancel", async () => {
   const onClose = jest.fn();
   render(
     <SealedSecretDialog application={dummyApplication} onClose={onClose} open />
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+  await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(onClose).toHaveBeenCalled();
 });
 
@@ -53,17 +53,17 @@ test("Generate sealed secret", async () => {
     />
   );
 
-  userEvent.type(
+  await userEvent.type(
     screen.getByRole("textbox", { name: "Secret Data" }),
     "secret"
   );
-  userEvent.click(screen.getByRole("button", { name: "Encrypt" }));
+  await userEvent.click(screen.getByRole("button", { name: "Encrypt" }));
 
   await waitFor(() =>
     expect(screen.getByText("Encrypted secret data")).toBeInTheDocument()
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Close" }));
+  await userEvent.click(screen.getByRole("button", { name: "Close" }));
 
   await waitFor(() => expect(handleClose).toHaveBeenCalled());
 });

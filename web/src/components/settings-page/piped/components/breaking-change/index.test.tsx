@@ -21,7 +21,7 @@ describe("BreakingChange component", () => {
       screen.getByRole("button", { name: /view detail/i })
     ).toBeInTheDocument();
 
-    userEvent.click(screen.getByRole("button", { name: /view detail/i }));
+    await userEvent.click(screen.getByRole("button", { name: /view detail/i }));
     expect(
       screen.getByRole("heading", { name: /Breaking Changes/ })
     ).toBeInTheDocument();

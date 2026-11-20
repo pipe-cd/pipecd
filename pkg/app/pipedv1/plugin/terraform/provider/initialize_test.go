@@ -15,9 +15,17 @@
 package provider
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 )
 
 func TestMergeVars(t *testing.T) {
@@ -69,4 +77,51 @@ func TestMergeVars(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestNewTerraformCommand_Options(t *testing.T) {
+	t.Parallel()
+
+	appDir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(appDir, "main.tf"), []byte(`variable "env" {
+  type = string
+}
+`), 0o644))
+
+	newCommand := func(t *testing.T, opts ...Option) *Terraform {
+		t.Helper()
+		// Called outside a deployment, so there is no stage log persister.
+		client := sdk.NewClient(nil, "terraform", "app-id", "", nil, toolregistrytest.NewTestToolRegistry(t))
+		cmd, err := NewTerraformCommand(context.Background(), client, sdk.DeploymentSource[config.ApplicationConfigSpec]{
+			ApplicationDirectory: appDir,
+			ApplicationConfig: &sdk.ApplicationConfig[config.ApplicationConfigSpec]{
+				Spec: &config.ApplicationConfigSpec{TerraformVersion: "1.12.0", Vars: []string{"env=app"}},
+			},
+		}, &sdk.DeployTarget[config.DeployTargetConfig]{
+			Name:   "dt-1",
+			Config: config.DeployTargetConfig{Vars: []string{"region=dt"}},
+		}, opts...)
+		require.NoError(t, err)
+		return cmd
+	}
+
+	t.Run("without options", func(t *testing.T) {
+		t.Parallel()
+		cmd := newCommand(t)
+		assert.False(t, cmd.options.noColor)
+		assert.Equal(t, []string{"region=dt", "env=app"}, cmd.options.vars)
+	})
+
+	t.Run("with WithoutColor", func(t *testing.T) {
+		t.Parallel()
+		cmd := newCommand(t, WithoutColor())
+		assert.True(t, cmd.options.noColor)
+		assert.Equal(t, []string{"region=dt", "env=app"}, cmd.options.vars)
+	})
+
+	t.Run("given options are applied after the application config", func(t *testing.T) {
+		t.Parallel()
+		cmd := newCommand(t, WithVars([]string{"env=override"}))
+		assert.Equal(t, []string{"env=override"}, cmd.options.vars)
+	})
 }

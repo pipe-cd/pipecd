@@ -3,7 +3,7 @@ import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { render, screen, MemoryRouter } from "~~/test-utils";
 import { ApplicationListItem } from ".";
 
-test("delete", () => {
+test("delete", async () => {
   const handleDelete = jest.fn();
   render(
     <MemoryRouter>
@@ -22,13 +22,13 @@ test("delete", () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
 
   expect(handleDelete).toHaveBeenCalled();
 });
 
-test("edit", () => {
+test("edit", async () => {
   const handleEdit = jest.fn();
   render(
     <MemoryRouter>
@@ -47,13 +47,13 @@ test("edit", () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
 
   expect(handleEdit).toHaveBeenCalled();
 });
 
-test("disable", () => {
+test("disable", async () => {
   const handleDisable = jest.fn();
   render(
     <MemoryRouter>
@@ -72,13 +72,13 @@ test("disable", () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Disable" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Disable" }));
 
   expect(handleDisable).toHaveBeenCalled();
 });
 
-test("enable", () => {
+test("enable", async () => {
   const handleEnable = jest.fn();
 
   render(
@@ -98,13 +98,13 @@ test("enable", () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Enable" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Enable" }));
 
   expect(handleEnable).toHaveBeenCalled();
 });
 
-test("Encrypt Secret", () => {
+test("Encrypt Secret", async () => {
   const handleGenerateSecret = jest.fn();
   render(
     <MemoryRouter>
@@ -123,8 +123,10 @@ test("Encrypt Secret", () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Encrypt Secret" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(
+    screen.getByRole("menuitem", { name: "Encrypt Secret" })
+  );
 
   expect(handleGenerateSecret).toHaveBeenCalled();
 });

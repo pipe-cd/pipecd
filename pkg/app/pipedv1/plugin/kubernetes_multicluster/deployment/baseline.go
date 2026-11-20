@@ -228,7 +228,7 @@ func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *s
 
 	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
-	eg, ctx := errgroup.WithContext(ctx)
+	var eg errgroup.Group
 	for _, tc := range targetConfigs {
 		eg.Go(func() error {
 			lp.Infof("Start cleaning BASELINE variant on target %s", tc.deployTarget.Name)

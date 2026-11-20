@@ -37,17 +37,20 @@ it("should show success message when update static admin", async () => {
 
   await waitFor(() => screen.getByText("static-admin-user"));
 
-  userEvent.click(
+  await userEvent.click(
     screen.getByRole("button", { name: "edit static admin user" })
   );
 
   await waitFor(() => screen.getByText("Edit Static Admin"));
 
-  userEvent.type(screen.getByRole("textbox", { name: /username/i }), "-new");
-  userEvent.type(screen.getByLabelText(/password/i), "new-password");
+  await userEvent.type(
+    screen.getByRole("textbox", { name: /username/i }),
+    "-new"
+  );
+  await userEvent.type(screen.getByLabelText(/password/i), "new-password");
 
-  act(() => {
-    userEvent.click(screen.getByRole("button", { name: /save/i }));
+  await act(async () => {
+    await userEvent.click(screen.getByRole("button", { name: /save/i }));
   });
 
   await waitForElementToBeRemoved(() => screen.getByText("Edit Static Admin"));

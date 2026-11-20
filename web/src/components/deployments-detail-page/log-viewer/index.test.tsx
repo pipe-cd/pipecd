@@ -52,7 +52,7 @@ it("should appear stage log in the document if activeState is exists", () => {
   expect(screen.queryByText("hello world")).toBeInTheDocument();
 });
 
-it("should clearActiveStage action if click `close log` button", () => {
+it("should clearActiveStage action if click `close log` button", async () => {
   const changeActiveStage = jest.fn();
   render(
     <LogViewer
@@ -62,7 +62,7 @@ it("should clearActiveStage action if click `close log` button", () => {
     />
   );
 
-  userEvent.click(screen.getByRole("button", { name: "close log" }));
+  await userEvent.click(screen.getByRole("button", { name: "close log" }));
 
   expect(changeActiveStage).toHaveBeenCalled();
 });
