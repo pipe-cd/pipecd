@@ -151,6 +151,15 @@ Pipedv1 releases is done by [publish_pipedv1_exp github actions](https://github.
 | version    | The version of the pipedv1 to release.        |    yes   | v1.0.0-rc0    |
 
 
+# Crediting contributors
+
+When a PipeCD release or a plugin release is published, the [release_contributors](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/release-contributors.yaml) workflow runs automatically and:
+
+- Appends a `Contributors` section to the release notes, listing the authors of all pull requests in the release and calling out first-time contributors.
+- Comments on each pull request in the release with a link to the release it shipped in (skipped for release candidates).
+
+Pull requests opened by bots are ignored. The workflow can also be run by hand for an existing tag; it starts in dry-run mode, which only logs what would change, and running it twice does not duplicate anything.
+
 # Plugins releases
 
 Piped's plugins are versioned independently from PipeCD. This means that the plugin version is not related to the PipeCD version.
