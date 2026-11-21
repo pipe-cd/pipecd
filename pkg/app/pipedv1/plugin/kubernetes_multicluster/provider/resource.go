@@ -29,6 +29,8 @@ const (
 	KindDaemonSet   = "DaemonSet"
 	KindReplicaSet  = "ReplicaSet"
 	KindPod         = "Pod"
+	KindJob         = "Job"
+	KindCronJob     = "CronJob"
 
 	// Service
 	KindService = "Service"
