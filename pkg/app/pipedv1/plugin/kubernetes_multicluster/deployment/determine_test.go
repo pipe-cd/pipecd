@@ -1731,6 +1731,147 @@ spec:
 			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync by applying all manifests",
 		},
+		{
+			name: "cronjob image updated",
+			olds: []string{
+				`
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:1.19.3
+          restartPolicy: OnFailure
+`,
+			},
+			news: []string{
+				`
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:1.20.0
+          restartPolicy: OnFailure
+`,
+			},
+			workloadRefs: []config.K8sResourceReference{
+				{
+					Kind: "CronJob",
+					Name: "nightly",
+				},
+			},
+			wantStrategy: sdk.SyncStrategyPipelineSync,
+			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.20.0",
+		},
+		{
+			name: "cronjob pod template changed",
+			olds: []string{
+				`
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:1.19.3
+          restartPolicy: OnFailure
+`,
+			},
+			news: []string{
+				`
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx-new
+            image: nginx:1.19.3
+          restartPolicy: OnFailure
+`,
+			},
+			workloadRefs: []config.K8sResourceReference{
+				{
+					Kind: "CronJob",
+					Name: "nightly",
+				},
+			},
+			wantStrategy: sdk.SyncStrategyPipelineSync,
+			wantSummary:  "Sync progressively because pod template of workload nightly was changed",
+		},
+		{
+			name: "cronjob schedule updated",
+			olds: []string{
+				`
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:1.19.3
+          restartPolicy: OnFailure
+`,
+			},
+			news: []string{
+				`
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly
+spec:
+  schedule: "0 1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:1.19.3
+          restartPolicy: OnFailure
+`,
+			},
+			workloadRefs: []config.K8sResourceReference{
+				{
+					Kind: "CronJob",
+					Name: "nightly",
+				},
+			},
+			wantStrategy: sdk.SyncStrategyQuickSync,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
 	}
 
 	for _, tt := range tests {
