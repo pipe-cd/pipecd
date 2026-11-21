@@ -252,6 +252,35 @@ spec:
   newTag: sha256:cba4321
 `),
 		},
+		{
+			name:     "capturing group after a nested group that does not match",
+			path:     "testdata/kustomization.yaml",
+			regex:    "newTag: (?:(x)|v)([0-9].[0-9].[0-9])",
+			newValue: "0.2.0",
+			want: []byte(`images:
+- name: gcr.io/pipecd/foo
+  newTag: v0.2.0
+`),
+		},
+		{
+			name:     "capturing group after a nested group that matches",
+			path:     "testdata/kustomization.yaml",
+			regex:    "newTag: (?:(v)|x)([0-9].[0-9].[0-9])",
+			newValue: "0.2.0",
+			want: []byte(`images:
+- name: gcr.io/pipecd/foo
+  newTag: v0.2.0
+`),
+		},
+		{
+			name:         "capturing group in an alternative that does not match",
+			path:         "testdata/kustomization.yaml",
+			regex:        "(x)|newTag: v0.1.0",
+			newValue:     "v0.2.0",
+			want:         nil,
+			wantUpToDate: false,
+			wantErr:      true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

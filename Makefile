@@ -220,7 +220,7 @@ lint/go:
 	@echo "Linting go modules..."
 	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
 		echo "Linting module: $$module"; \
-		docker run ${FLAGS} -w /repo/$$module golangci/golangci-lint@${VERSION} golangci-lint run -v --config /repo/.golangci.yml --fix=$(FIX); \
+		docker run ${FLAGS} -w /repo/$$module golangci/golangci-lint@${VERSION} golangci-lint run -v --config /repo/.golangci.yml --fix=$(FIX) || exit 1; \
 	done
 
 .PHONY: lint/web
@@ -333,7 +333,7 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 check: build lint test check/gen/code check/dco ## Run all checks
 
 .PHONY: check/gen/code
-check/gen: gen/code
+check/gen/code: gen/code
 	git add -N .
 	git diff --exit-code --quiet HEAD
 

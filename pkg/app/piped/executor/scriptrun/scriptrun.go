@@ -109,7 +109,7 @@ func (e *Executor) executeCommand() model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	envs := make([]string, 0, len(ciEnv)+len(opts.Env))
+	envs := make([]string, 0, len(ciEnv))
 	for key, value := range ciEnv {
 		envs = append(envs, key+"="+value)
 	}

@@ -263,6 +263,66 @@ func TestMatch(t *testing.T) {
 				}: true,
 			},
 		},
+		{
+			name:   "empty label value without ignoreLabels",
+			config: config.NotificationRoute{},
+			matchings: map[model.NotificationEvent]bool{
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env": "",
+							},
+						},
+					},
+				}: true,
+			},
+		},
+		{
+			name: "ignoreLabels with empty values",
+			config: config.NotificationRoute{
+				IgnoreLabels: map[string]string{
+					"team": "not-pipecd",
+					"tier": "",
+				},
+			},
+			matchings: map[model.NotificationEvent]bool{
+				// The label is not listed in ignoreLabels.
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env": "",
+							},
+						},
+					},
+				}: true,
+				// The label is listed in ignoreLabels with an empty value.
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+					Metadata: &model.NotificationEventDeploymentPlanned{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"tier": "",
+							},
+						},
+					},
+				}: false,
+				// The label is listed in ignoreLabels with another value.
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
+					Metadata: &model.NotificationEventDeploymentSucceeded{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"team": "",
+							},
+						},
+					},
+				}: true,
+			},
+		},
 	}
 
 	for _, tc := range testcases {

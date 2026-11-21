@@ -86,7 +86,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: piped
-  annotaions:
+  annotations:
     run.googleapis.com/ingress: internal
     run.googleapis.com/ingress-status: internal
 spec:
@@ -129,7 +129,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: piped
-  annotaions:
+  annotations:
     run.googleapis.com/ingress: internal
     run.googleapis.com/ingress-status: internal
 spec:

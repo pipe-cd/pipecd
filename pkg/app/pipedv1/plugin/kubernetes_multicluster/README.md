@@ -332,7 +332,7 @@ Allows setting per-cluster manifest overrides within a single deployment input.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | editableRoutes | []string | Routes in the VirtualService that can be modified. Empty means all routes. | No |
-| host | string | The service host. | No |
+| host | string | The service host. Empty means `service.name`. | No |
 | virtualService | [K8sResourceReference](#k8sresourcereference) | Reference to the VirtualService resource. Empty means the first VirtualService found. | No |
 
 #### K8sResourceReference

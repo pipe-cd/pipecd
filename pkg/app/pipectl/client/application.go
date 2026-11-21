@@ -67,7 +67,7 @@ func SyncApplication(
 		}
 
 		if cmd.Type != model.Command_SYNC_APPLICATION {
-			logger.Error(fmt.Sprintf("Unexpected command type, want: %s, got: %s", model.Command_SYNC_APPLICATION.String(), cmd.Type.String()))
+			err = fmt.Errorf("unexpected command type, want: %s, got: %s", model.Command_SYNC_APPLICATION.String(), cmd.Type.String())
 			return
 		}
 
@@ -77,11 +77,11 @@ func SyncApplication(
 			return
 
 		case model.CommandStatus_COMMAND_FAILED:
-			logger.Error("The request was unable to handle")
+			err = fmt.Errorf("the sync request was unable to be handled")
 			return
 
 		case model.CommandStatus_COMMAND_TIMEOUT:
-			logger.Error("The request was timed out")
+			err = fmt.Errorf("the sync request timed out")
 			return
 
 		default:

@@ -65,15 +65,31 @@ export const TEXT_TO_RBAC_ACTION_TYPE: Record<
   delete: ProjectRBACPolicy.Action.DELETE,
 };
 
-// example: resources=(\*|application|deployment|event|piped|deploymentChain|project|apiKey|insight|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
-export const POLICIES_STRING_REGEX = new RegExp(
+// A single label pair, e.g. "env:prod". Key/value exclude the characters
+// that are structurally significant elsewhere in the grammar (`;{}:,`), as
+// well as whitespace, so a label block can't accidentally swallow the
+// resources/actions separator or use a newline (policies are split on
+// blank lines) to escape the label block.
+const LABEL_PAIR = "[^;{}:,\\s]+:[^;{}:,\\s]+";
+// A label block requires at least one valid key:value pair; empty ("{}")
+// or malformed ("{garbage}") label content is rejected.
+const LABEL_BLOCK = `(\\{${LABEL_PAIR}(,${LABEL_PAIR})*\\})?`;
+
+// example: resources=(\*|application(\{key:value(,key:value)*\})?|deployment(\{key:value(,key:value)*\})?|...|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
+const POLICY =
   "resources=(" +
-    rbacResourceTypes()
-      .map((v) => v.replace(/\*/g, "\\*"))
-      .join("|") +
-    "|,)+;\\s*actions=(" +
-    rbacActionTypes()
-      .map((v) => v.replace(/\*/g, "\\*"))
-      .join("|") +
-    "|,)+"
+  rbacResourceTypes()
+    .map((v) => v.replace(/\*/g, "\\*") + LABEL_BLOCK)
+    .join("|") +
+  "|,)+;\\s*actions=(" +
+  rbacActionTypes()
+    .map((v) => v.replace(/\*/g, "\\*"))
+    .join("|") +
+  "|,)+";
+
+// The whole text must be policies separated by blank lines, the way
+// parseRBACPolicies splits them. Without the anchors, only the first policy
+// was checked, and a typo after it (an unknown resource or action) passed.
+export const POLICIES_STRING_REGEX = new RegExp(
+  `^\\s*${POLICY}([ \\t]*\\n\\n\\s*${POLICY})*\\s*$`
 );

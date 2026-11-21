@@ -25,6 +25,13 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
 )
 
+// executeECSSyncStage runs the ECS_SYNC stage. An application without a service definition that
+// runs a standalone task is handled first and does not involve a deployment controller.
+// Otherwise the behavior depends on the controller declared in the service definition
+// (a missing controller means ECS):
+//   - ECS: AWS performs the rollout. The service is updated to the new task definition and
+//     the resulting service deployment is awaited (see syncECSController).
+//   - EXTERNAL: PipeCD performs the rollout by creating a PRIMARY task set and deleting the old ones.
 func (p *ECSPlugin) executeECSSyncStage(
 	ctx context.Context,
 	input *sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec],
@@ -73,8 +80,35 @@ func (p *ECSPlugin) executeECSSyncStage(
 		return sdk.StageStatusFailure
 	}
 
+	// The deployment controller declared in the service definition decides how the sync is performed.
+	// It must be resolved before LoadTargetGroups, which only applies to the EXTERNAL controller.
+	controller, err := resolveController(ctx, client, serviceDef)
+	if err != nil {
+		lp.Errorf("Failed to determine the deployment controller: %v", err)
+		return sdk.StageStatusFailure
+	}
+
+	// With the ECS controller, load balancers are defined in the service definition,
+	// so the target groups of the application config are not used.
+	if controller == types.DeploymentControllerTypeEcs {
+		// Recreate stops all tasks before starting new ones, which only the EXTERNAL controller does.
+		// Reject it rather than silently running old and new tasks together under rolling update.
+		if cfg.Spec.QuickSyncOptions.Recreate {
+			lp.Error("quickSync.recreate is not supported with the ECS deployment controller: to stop old tasks before starting new ones, set deploymentConfiguration minimumHealthyPercent: 0 and maximumPercent: 100 in the service definition instead")
+			return sdk.StageStatusFailure
+		}
+		if err := syncECSController(ctx, lp, client, taskDef, serviceDef); err != nil {
+			lp.Errorf("Failed to sync ECS service: %v", err)
+			return sdk.StageStatusFailure
+		}
+		lp.Success("Successfully synced ECS service")
+		return sdk.StageStatusSuccess
+	}
+
+	// With the EXTERNAL controller, PipeCD manages task sets itself,
+	// so the target groups come from the app config.
 	var primary *types.LoadBalancer
-	// When the services is not accessed via ELB, the target group is not used
+	// When the service is not accessed via ELB, the target group is not used
 	if cfg.Spec.Input.AccessType == "ELB" {
 		primary, _, err = provider.LoadTargetGroups(cfg.Spec.Input.TargetGroups)
 		if err != nil {
@@ -277,6 +311,10 @@ func findTagsToRemove(currentTags, desiredTags []types.Tag) []string {
 	}
 
 	for _, t := range currentTags {
+		// The commit hash tag is only replaced once a deployment succeeds, never removed.
+		if *t.Key == provider.LabelCommitHash {
+			continue
+		}
 		if _, exists := desired[*t.Key]; !exists {
 			tagsToRemove = append(tagsToRemove, *t.Key)
 		}

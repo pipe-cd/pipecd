@@ -1,5 +1,5 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, render, screen, waitFor } from "~~/test-utils";
+import { MemoryRouter, render, screen } from "~~/test-utils";
 import { Header } from "./";
 import { Cookies, CookiesProvider } from "react-cookie";
 import { server } from "~/mocks/server";
@@ -42,8 +42,8 @@ it("shows logout link if opened user menu", async () => {
     </MemoryRouter>
   );
 
-  await waitFor(() => {
-    userEvent.click(screen.getByRole("button", { name: "User Menu" }));
-  });
+  await userEvent.click(
+    await screen.findByRole("button", { name: "User Menu" })
+  );
   expect(screen.getByRole("menuitem", { name: "Logout" })).toBeInTheDocument();
 });

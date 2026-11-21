@@ -403,3 +403,59 @@ func TestApplication_GetLabelsString(t *testing.T) {
 		})
 	}
 }
+
+func TestApplicationGitPath_ValidatePath(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		path    string
+		wantErr bool
+	}{
+		{name: "nested dir", path: "apps/foo"},
+		{name: "parent ref staying inside repo", path: "apps/../foo"},
+		{name: "dots inside name", path: "foo..bar"},
+		{name: "empty", path: "", wantErr: true},
+		{name: "absolute", path: "/etc", wantErr: true},
+		{name: "parent dir", path: "..", wantErr: true},
+		{name: "escape from root", path: "../foo", wantErr: true},
+		{name: "escape from nested", path: "apps/../../foo", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := (&ApplicationGitPath{Path: tt.path}).ValidatePath()
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
+
+func TestValidateApplicationConfigFilename(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		filename string
+		wantErr  bool
+	}{
+		{name: "empty means default", filename: ""},
+		{name: "plain file name", filename: "app.pipecd.yaml"},
+		{name: "dots inside name", filename: "app..pipecd.yaml"},
+		{name: "current dir", filename: ".", wantErr: true},
+		{name: "parent dir", filename: "..", wantErr: true},
+		{name: "nested path", filename: "sub/app.pipecd.yaml", wantErr: true},
+		{name: "escape path", filename: "../app.pipecd.yaml", wantErr: true},
+		{name: "backslash path", filename: `..\app.pipecd.yaml`, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := ValidateApplicationConfigFilename(tt.filename)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}

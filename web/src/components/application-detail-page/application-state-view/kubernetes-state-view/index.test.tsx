@@ -13,10 +13,10 @@ test("render resources", () => {
 test("filter resources", async () => {
   render(<KubernetesStateView resources={resourcesList} />, {});
 
-  userEvent.click(screen.getByRole("button", { name: UI_TEXT_FILTER }));
-  userEvent.click(screen.getByRole("checkbox", { name: "ReplicaSet" }));
+  await userEvent.click(screen.getByRole("button", { name: UI_TEXT_FILTER }));
+  await userEvent.click(screen.getByRole("checkbox", { name: "ReplicaSet" }));
   await act(async () => {
-    userEvent.click(screen.getByRole("button", { name: "APPLY" }));
+    await userEvent.click(screen.getByRole("button", { name: "APPLY" }));
   });
 
   expect(screen.queryAllByTestId("kubernetes-resource")).toHaveLength(2);

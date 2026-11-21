@@ -16,7 +16,7 @@ it("shows stage name", () => {
   expect(container).toHaveTextContent("APPROVAL_STAGE");
 });
 
-it("calls onClick handler if clicked component", () => {
+it("calls onClick handler if clicked component", async () => {
   const onClick = jest.fn();
   render(
     <ApprovalStage
@@ -28,6 +28,6 @@ it("calls onClick handler if clicked component", () => {
     {}
   );
 
-  userEvent.click(screen.getByText("APPROVAL_STAGE"));
+  await userEvent.click(screen.getByText("APPROVAL_STAGE"));
   expect(onClick).toHaveBeenCalledWith("stageId", "APPROVAL_STAGE");
 });

@@ -192,12 +192,15 @@ func (p *Plugin) executeK8sTrafficRoutingStageIstio(ctx context.Context, input *
 		return sdk.StageStatusFailure
 	}
 
+	istioCfg := cfg.Spec.TrafficRouting.Istio
+	if istioCfg == nil {
+		istioCfg = &kubeconfig.IstioTrafficRouting{}
+	}
+
 	// Use VirtualService reference from Istio config if specified, otherwise use Service reference
-	var vsRef kubeconfig.K8sResourceReference
-	if cfg.Spec.TrafficRouting != nil && cfg.Spec.TrafficRouting.Istio != nil && cfg.Spec.TrafficRouting.Istio.VirtualService.Name != "" {
-		vsRef = cfg.Spec.TrafficRouting.Istio.VirtualService
-	} else {
-		vsRef = cfg.Spec.Service
+	vsRef := cfg.Spec.Service
+	if istioCfg.VirtualService.Name != "" {
+		vsRef = istioCfg.VirtualService
 	}
 
 	virtualServices, err := findIstioVirtualServiceManifests(manifests, vsRef)
@@ -217,7 +220,7 @@ func (p *Plugin) executeK8sTrafficRoutingStageIstio(ctx context.Context, input *
 
 	primaryPercent, canaryPercent, baselinePercent := stageCfg.Percentages()
 
-	vs, err := generateVirtualServiceManifest(virtualService, cfg.Spec.Service.Name, cfg.Spec.TrafficRouting.Istio.EditableRoutes, cfg.Spec.VariantLabel, int32(canaryPercent), int32(baselinePercent), lp)
+	vs, err := generateVirtualServiceManifest(virtualService, cmp.Or(istioCfg.Host, cfg.Spec.Service.Name), istioCfg.EditableRoutes, cfg.Spec.VariantLabel, int32(canaryPercent), int32(baselinePercent), lp)
 	if err != nil {
 		lp.Errorf("Failed while generating VirtualService manifest: (%v)", err)
 		return sdk.StageStatusFailure
