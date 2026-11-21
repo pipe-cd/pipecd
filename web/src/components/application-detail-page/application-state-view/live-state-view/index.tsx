@@ -30,16 +30,26 @@ export const LiveStateView: FC<Props> = ({ resources: allResources }) => {
     [resourcesByDeployTarget]
   );
 
+  // Fall back to the first deploy target when nothing is selected yet, or when
+  // the selected one is no longer in the live state (e.g. after a refresh).
+  const selectedDeployTarget = deployTargetList.includes(
+    deployTargetTabSelected
+  )
+    ? deployTargetTabSelected
+    : deployTargetList[0] ?? "";
+
+  // Remember the fallback, so a refresh that adds an earlier-sorted target
+  // doesn't switch away from the one being shown.
   useEffect(() => {
-    if (deployTargetTabSelected == "" && deployTargetList.length > 0) {
-      setDeployTargetTabSelected(deployTargetList[0]);
+    if (selectedDeployTarget !== deployTargetTabSelected) {
+      setDeployTargetTabSelected(selectedDeployTarget);
     }
-  }, [deployTargetList, deployTargetTabSelected]);
+  }, [selectedDeployTarget, deployTargetTabSelected]);
 
   const resources = useMemo(() => {
-    if (!deployTargetTabSelected) return [];
-    return resourcesByDeployTarget[deployTargetTabSelected];
-  }, [deployTargetTabSelected, resourcesByDeployTarget]);
+    if (!selectedDeployTarget) return [];
+    return resourcesByDeployTarget[selectedDeployTarget];
+  }, [selectedDeployTarget, resourcesByDeployTarget]);
 
   return (
     <Box
@@ -54,13 +64,13 @@ export const LiveStateView: FC<Props> = ({ resources: allResources }) => {
       <Box sx={{ position: "absolute", left: 0, top: 0, zIndex: 100 }}>
         <DeployTargetTabBar
           tabs={deployTargetList}
-          selectedTab={deployTargetTabSelected}
+          selectedTab={selectedDeployTarget}
           onSelectTab={setDeployTargetTabSelected}
         />
       </Box>
 
-      {deployTargetTabSelected && (
-        <GraphView key={deployTargetTabSelected} resources={resources} />
+      {selectedDeployTarget && (
+        <GraphView key={selectedDeployTarget} resources={resources} />
       )}
     </Box>
   );
