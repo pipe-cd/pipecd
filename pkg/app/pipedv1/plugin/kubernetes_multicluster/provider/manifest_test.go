@@ -1176,3 +1176,58 @@ func TestFromStructuredObject(t *testing.T) {
 		})
 	}
 }
+
+func TestManifest_IsJobAndIsCronJob(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		manifest    string
+		wantJob     bool
+		wantCronJob bool
+	}{
+		{
+			name: "batch/v1 Job",
+			manifest: `
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: my-job
+`,
+			wantJob:     true,
+			wantCronJob: false,
+		},
+		{
+			name: "batch/v1 CronJob",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: my-cronjob
+`,
+			wantJob:     false,
+			wantCronJob: true,
+		},
+		{
+			name: "non-batch group Job CRD",
+			manifest: `
+apiVersion: custom.example.com/v1
+kind: Job
+metadata:
+  name: custom-job
+`,
+			wantJob:     false,
+			wantCronJob: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			manifests := mustParseManifests(t, tt.manifest)
+			require.Len(t, manifests, 1)
+			assert.Equal(t, tt.wantJob, manifests[0].IsJob())
+			assert.Equal(t, tt.wantCronJob, manifests[0].IsCronJob())
+		})
+	}
+}

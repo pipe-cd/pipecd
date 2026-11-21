@@ -140,6 +140,18 @@ func (m Manifest) IsPod() bool {
 	return m.body.GroupVersionKind().Group == "" && m.body.GetKind() == KindPod
 }
 
+// IsJob returns true if the manifest is a Job.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsJob() bool {
+	return m.body.GroupVersionKind().Group == "batch" && m.body.GetKind() == KindJob
+}
+
+// IsCronJob returns true if the manifest is a CronJob.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsCronJob() bool {
+	return m.body.GroupVersionKind().Group == "batch" && m.body.GetKind() == KindCronJob
+}
+
 // IsSecret returns true if the manifest is a Secret.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsSecret() bool {
