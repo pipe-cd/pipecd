@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -26,10 +27,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
 )
 
+// Match the default stage timeout used by pipedv1.
+const ecsRollbackTimeout = 6 * time.Hour
+
 func (p *ECSPlugin) executeECSRollbackStage(
 	ctx context.Context,
 	input *sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec],
 	deployTarget *sdk.DeployTarget[ecsconfig.ECSDeployTargetConfig],
+	registry provider.Registry,
 ) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 
@@ -45,7 +50,7 @@ func (p *ECSPlugin) executeECSRollbackStage(
 		return sdk.StageStatusFailure
 	}
 
-	client, err := provider.DefaultRegistry().Client(deployTarget.Name, deployTarget.Config)
+	client, err := registry.Client(deployTarget.Name, deployTarget.Config)
 	if err != nil {
 		lp.Errorf("Failed to get ECS client for deploy target %s: %v", deployTarget.Name, err)
 		return sdk.StageStatusFailure
@@ -71,6 +76,25 @@ func (p *ECSPlugin) executeECSRollbackStage(
 	if err != nil {
 		lp.Errorf("Failed to load service definition from running deployment source: %v", err)
 		return sdk.StageStatusFailure
+	}
+
+	controller, err := resolveController(ctx, client, serviceDef)
+	if err != nil {
+		lp.Errorf("Failed to determine the deployment controller: %v", err)
+		return sdk.StageStatusFailure
+	}
+
+	// Only the EXTERNAL controller uses the application's target groups and task sets.
+	if controller == types.DeploymentControllerTypeEcs {
+		// The scheduler does not set a deadline for rollback stages.
+		rolloutCtx, cancel := context.WithTimeout(ctx, ecsRollbackTimeout)
+		defer cancel()
+		if err := syncECSController(rolloutCtx, lp, client, taskDef, serviceDef); err != nil {
+			lp.Errorf("Failed to rollback ECS service: %v", err)
+			return sdk.StageStatusFailure
+		}
+		lp.Successf("Successfully rolled back ECS service %s to commit %s", *serviceDef.ServiceName, runningSource.CommitHash)
+		return sdk.StageStatusSuccess
 	}
 
 	var primary *types.LoadBalancer

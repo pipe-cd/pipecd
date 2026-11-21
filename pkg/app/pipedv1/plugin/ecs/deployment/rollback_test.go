@@ -17,15 +17,187 @@ package deployment
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
+	"testing/synctest"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	ecsconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
 )
+
+type rollbackTestRegistry struct {
+	client provider.Client
+}
+
+func (r rollbackTestRegistry) Client(string, ecsconfig.ECSDeployTargetConfig) (provider.Client, error) {
+	return r.client, nil
+}
+
+func TestExecuteECSRollbackStageWithECSController(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name               string
+		controller         string
+		accessType         string
+		waitErr            error
+		waitForDeadline    bool
+		controllerMismatch bool
+		wantStatus         sdk.StageStatus
+	}{
+		{
+			name:       "default controller with a service load balancer",
+			accessType: "ELB",
+			wantStatus: sdk.StageStatusSuccess,
+		},
+		{
+			name:       "explicit ECS controller",
+			controller: "deploymentController:\n  type: ECS\n",
+			accessType: "SERVICE_DISCOVERY",
+			wantStatus: sdk.StageStatusSuccess,
+		},
+		{
+			name:       "failed rollout does not tag the service",
+			accessType: "ELB",
+			waitErr:    errors.New("service deployment failed"),
+			wantStatus: sdk.StageStatusFailure,
+		},
+		{
+			name:            "rollout times out",
+			accessType:      "ELB",
+			waitForDeadline: true,
+			wantStatus:      sdk.StageStatusFailure,
+		},
+		{
+			name:               "live service uses EXTERNAL",
+			accessType:         "SERVICE_DISCOVERY",
+			controllerMismatch: true,
+			wantStatus:         sdk.StageStatusFailure,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			synctest.Test(t, func(t *testing.T) {
+				dir := t.TempDir()
+				const taskDef = `family: app
+containerDefinitions:
+- name: app
+  image: app:previous
+`
+				const serviceDef = `cluster: cluster
+serviceName: svc
+loadBalancers:
+- targetGroupArn: service-target-group
+`
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "taskdef.yaml"), []byte(taskDef), 0o600))
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "servicedef.yaml"), []byte(serviceDef+tt.controller), 0o600))
+
+				input := &sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec]{
+					Client: sdk.NewClient(nil, "ecs", "app", "rollback", &fakeLogPersister{}, nil),
+					Request: sdk.ExecuteStageRequest[ecsconfig.ECSApplicationSpec]{
+						StageName: StageECSRollback,
+						RunningDeploymentSource: sdk.DeploymentSource[ecsconfig.ECSApplicationSpec]{
+							ApplicationDirectory: dir,
+							CommitHash:           "previous-commit",
+							ApplicationConfig: &sdk.ApplicationConfig[ecsconfig.ECSApplicationSpec]{
+								Spec: &ecsconfig.ECSApplicationSpec{Input: ecsconfig.ECSDeploymentInput{
+									TaskDefinitionFile:    "taskdef.yaml",
+									ServiceDefinitionFile: "servicedef.yaml",
+									AccessType:            tt.accessType,
+								}},
+							},
+						},
+						TargetDeploymentSource: sdk.DeploymentSource[ecsconfig.ECSApplicationSpec]{
+							CommitHash: "failed-commit",
+						},
+					},
+				}
+
+				service := ecsServiceDef(&types.DeploymentController{Type: types.DeploymentControllerTypeEcs})
+				if tt.controllerMismatch {
+					service.DeploymentController.Type = types.DeploymentControllerTypeExternal
+				}
+				registeredTask := &types.TaskDefinition{TaskDefinitionArn: aws.String("app:2")}
+				client := happyPathClient(registeredTask, &service, nil, nil)
+				client.DescribeServiceFunc = func(context.Context, types.Service) (*types.Service, error) {
+					return &service, nil
+				}
+				client.RegisterTaskDefinitionFunc = func(_ context.Context, task types.TaskDefinition) (*types.TaskDefinition, error) {
+					require.False(t, tt.controllerMismatch, "controller mismatch must fail before registering a task definition")
+					require.Len(t, task.ContainerDefinitions, 1)
+					assert.Equal(t, "app:previous", aws.ToString(task.ContainerDefinitions[0].Image))
+					return registeredTask, nil
+				}
+				client.GetLatestServiceDeploymentFunc = func(context.Context, string, string) (*types.ServiceDeploymentBrief, error) {
+					return &types.ServiceDeploymentBrief{ServiceDeploymentArn: aws.String("failed-deployment")}, nil
+				}
+				client.GetServiceTaskSetsFunc = func(context.Context, types.Service) ([]types.TaskSet, error) {
+					t.Error("rollback for the ECS controller must not read task sets")
+					return nil, errors.New("task sets are unsupported")
+				}
+
+				var updated, waited bool
+				client.UpdateServiceFunc = func(_ context.Context, desired types.Service) (*types.Service, error) {
+					assert.Equal(t, "app:2", aws.ToString(desired.TaskDefinition))
+					require.Len(t, desired.LoadBalancers, 1)
+					assert.Equal(t, "service-target-group", aws.ToString(desired.LoadBalancers[0].TargetGroupArn))
+					updated = true
+					return &service, nil
+				}
+				client.WaitServiceDeploymentCompleteFunc = func(ctx context.Context, _, _ string, previous *string) error {
+					deadline, hasDeadline := ctx.Deadline()
+					require.True(t, hasDeadline, "rollback must bound the rollout wait")
+					assert.Equal(t, 6*time.Hour, time.Until(deadline))
+					assert.True(t, updated)
+					assert.Equal(t, "failed-deployment", aws.ToString(previous))
+					waited = true
+					if tt.waitForDeadline {
+						<-ctx.Done()
+						assert.ErrorIs(t, ctx.Err(), context.DeadlineExceeded)
+						return ctx.Err()
+					}
+					return tt.waitErr
+				}
+				var taggedCommit string
+				client.TagResourceFunc = func(_ context.Context, _ string, tags []types.Tag) error {
+					for _, tag := range tags {
+						if aws.ToString(tag.Key) == provider.LabelCommitHash {
+							assert.True(t, waited)
+							taggedCommit = aws.ToString(tag.Value)
+						}
+					}
+					return nil
+				}
+
+				p := &ECSPlugin{}
+				target := &sdk.DeployTarget[ecsconfig.ECSDeployTargetConfig]{}
+				got := p.executeECSRollbackStage(t.Context(), input, target, rollbackTestRegistry{client: client})
+				assert.Equal(t, tt.wantStatus, got)
+				if tt.controllerMismatch {
+					assert.False(t, updated)
+					assert.False(t, waited)
+					assert.Empty(t, taggedCommit)
+					return
+				}
+				assert.True(t, waited, "rollback must wait for the service deployment")
+				if tt.wantStatus == sdk.StageStatusSuccess {
+					assert.Equal(t, "previous-commit", taggedCommit)
+				} else {
+					assert.Empty(t, taggedCommit)
+				}
+			})
+		})
+	}
+}
 
 func TestRollBack(t *testing.T) {
 	t.Parallel()
