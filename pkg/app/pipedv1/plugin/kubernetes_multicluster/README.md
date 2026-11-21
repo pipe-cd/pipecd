@@ -296,7 +296,7 @@ Allows setting per-cluster manifest overrides within a single deployment input.
 | path | string | Path to the local chart directory (relative to the app directory). | No |
 | gitRemote | string | Git remote URL of the chart repository. | No |
 | ref | string | Commit SHA or tag for the remote git chart. | No |
-| repository | string | Name of an added Helm chart repository. | No |
+| repository | string | Name of an added Helm chart repository, or an OCI reference such as `oci://registry.example.com/charts`. | No |
 | name | string | Name of the chart in the repository. | No |
 | version | string | Version of the chart. | No |
 
