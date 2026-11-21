@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"text/template"
 
 	"go.uber.org/zap"
@@ -32,12 +33,88 @@ const (
 	defaultTerraformVersion = "0.13.0"
 )
 
-var (
-	kubectlInstallScriptTmpl   = template.Must(template.New("kubectl").Parse(kubectlInstallScript))
-	kustomizeInstallScriptTmpl = template.Must(template.New("kustomize").Parse(kustomizeInstallScript))
-	helmInstallScriptTmpl      = template.Must(template.New("helm").Parse(helmInstallScript))
-	terraformInstallScriptTmpl = template.Must(template.New("terraform").Parse(terraformInstallScript))
-)
+var installScripts = map[string]map[string]string{
+	"kubectl": {
+		"linux": `
+cd {{ .WorkingDir }}
+curl -LO https://dl.k8s.io/release/v{{ .Version }}/bin/linux/amd64/kubectl
+mv kubectl {{ .BinDir }}/kubectl-{{ .Version }}
+chmod +x {{ .BinDir }}/kubectl-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/kubectl-{{ .Version }} {{ .BinDir }}/kubectl
+{{ end }}
+`,
+		"darwin": `
+cd {{ .WorkingDir }}
+curl -LO https://dl.k8s.io/release/v{{ .Version }}/bin/darwin/amd64/kubectl
+mv kubectl {{ .BinDir }}/kubectl-{{ .Version }}
+chmod +x {{ .BinDir }}/kubectl-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/kubectl-{{ .Version }} {{ .BinDir }}/kubectl
+{{ end }}
+`,
+	},
+	"kustomize": {
+		"linux": `
+cd {{ .WorkingDir }}
+curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_linux_amd64.tar.gz | tar xvz
+mv kustomize {{ .BinDir }}/kustomize-{{ .Version }}
+chmod +x {{ .BinDir }}/kustomize-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/kustomize-{{ .Version }} {{ .BinDir }}/kustomize
+{{ end }}
+`,
+		"darwin": `
+cd {{ .WorkingDir }}
+curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_darwin_amd64.tar.gz | tar xvz
+mv kustomize {{ .BinDir }}/kustomize-{{ .Version }}
+chmod +x {{ .BinDir }}/kustomize-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/kustomize-{{ .Version }} {{ .BinDir }}/kustomize
+{{ end }}
+`,
+	},
+	"helm": {
+		"linux": `
+cd {{ .WorkingDir }}
+curl -L https://get.helm.sh/helm-v{{ .Version }}-linux-amd64.tar.gz | tar xvz
+mv linux-amd64/helm {{ .BinDir }}/helm-{{ .Version }}
+chmod +x {{ .BinDir }}/helm-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
+{{ end }}
+`,
+		"darwin": `
+cd {{ .WorkingDir }}
+curl -L https://get.helm.sh/helm-v{{ .Version }}-darwin-amd64.tar.gz | tar xvz
+mv darwin-amd64/helm {{ .BinDir }}/helm-{{ .Version }}
+chmod +x {{ .BinDir }}/helm-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
+{{ end }}
+`,
+	},
+	"terraform": {
+		"linux": `
+cd {{ .WorkingDir }}
+curl https://releases.hashicorp.com/terraform/{{ .Version }}/terraform_{{ .Version }}_linux_amd64.zip -o terraform_{{ .Version }}_linux_amd64.zip
+unzip terraform_{{ .Version }}_linux_amd64.zip
+mv terraform {{ .BinDir }}/terraform-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/terraform-{{ .Version }} {{ .BinDir }}/terraform
+{{ end }}
+`,
+		"darwin": `
+cd {{ .WorkingDir }}
+curl https://releases.hashicorp.com/terraform/{{ .Version }}/terraform_{{ .Version }}_darwin_amd64.zip -o terraform_{{ .Version }}_linux_amd64.zip
+unzip terraform_{{ .Version }}_linux_amd64.zip
+mv terraform {{ .BinDir }}/terraform-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/terraform-{{ .Version }} {{ .BinDir }}/terraform
+{{ end }}
+`,
+	},
+}
 
 func (r *registry) installKubectl(ctx context.Context, version string) error {
 	workingDir, err := os.MkdirTemp("", "kubectl-install")
@@ -60,6 +137,7 @@ func (r *registry) installKubectl(ctx context.Context, version string) error {
 			"AsDefault":  asDefault,
 		}
 	)
+	kubectlInstallScriptTmpl := template.Must(template.New("kubectl").Parse(installScripts["kubectl"][runtime.GOOS]))
 	if err := kubectlInstallScriptTmpl.Execute(&buf, data); err != nil {
 		r.logger.Error("failed to render kubectl install script",
 			zap.String("version", version),
@@ -107,6 +185,7 @@ func (r *registry) installKustomize(ctx context.Context, version string) error {
 			"AsDefault":  asDefault,
 		}
 	)
+	kustomizeInstallScriptTmpl := template.Must(template.New("kustomize").Parse(installScripts["kustomize"][runtime.GOOS]))
 	if err := kustomizeInstallScriptTmpl.Execute(&buf, data); err != nil {
 		r.logger.Error("failed to render kustomize install script",
 			zap.String("version", version),
@@ -154,6 +233,7 @@ func (r *registry) installHelm(ctx context.Context, version string) error {
 			"AsDefault":  asDefault,
 		}
 	)
+	helmInstallScriptTmpl := template.Must(template.New("helm").Parse(installScripts["helm"][runtime.GOOS]))
 	if err := helmInstallScriptTmpl.Execute(&buf, data); err != nil {
 		r.logger.Error("failed to render helm install script",
 			zap.String("version", version),
@@ -201,6 +281,7 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 			"AsDefault":  asDefault,
 		}
 	)
+	terraformInstallScriptTmpl := template.Must(template.New("terraform").Parse(installScripts["terraform"][runtime.GOOS]))
 	if err := terraformInstallScriptTmpl.Execute(&buf, data); err != nil {
 		r.logger.Error("failed to render terraform install script",
 			zap.String("version", version),

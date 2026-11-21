@@ -71,7 +71,6 @@ func TestSync(t *testing.T) {
 		wantPendings []*model.Deployment
 		wantPlanneds []*model.Deployment
 		wantRunnings []*model.Deployment
-		wantHeads    map[string]*model.Deployment
 		// wantCursors is the ordered sequence of Cursor values sync() is
 		// expected to send. The first request always carries "".
 		wantCursors []string
@@ -84,7 +83,6 @@ func TestSync(t *testing.T) {
 			wantPendings: nil,
 			wantPlanneds: nil,
 			wantRunnings: nil,
-			wantHeads:    map[string]*model.Deployment{},
 			wantCursors:  []string{""},
 		},
 		{
@@ -95,13 +93,7 @@ func TestSync(t *testing.T) {
 			wantPendings: []*model.Deployment{pending},
 			wantPlanneds: []*model.Deployment{planned},
 			wantRunnings: []*model.Deployment{running, rollingBack},
-			wantHeads: map[string]*model.Deployment{
-				"app-1": pending,
-				"app-2": planned,
-				"app-3": running,
-				"app-4": rollingBack,
-			},
-			wantCursors: []string{""},
+			wantCursors:  []string{""},
 		},
 		{
 			name: "paginates_across_multiple_pages",
@@ -112,12 +104,7 @@ func TestSync(t *testing.T) {
 			wantPendings: []*model.Deployment{pending},
 			wantPlanneds: []*model.Deployment{planned},
 			wantRunnings: []*model.Deployment{running},
-			wantHeads: map[string]*model.Deployment{
-				"app-1": pending,
-				"app-2": planned,
-				"app-3": running,
-			},
-			wantCursors: []string{"", "page2"},
+			wantCursors:  []string{"", "page2"},
 		},
 		{
 			name: "rolling_back_is_classified_as_running",
@@ -127,10 +114,7 @@ func TestSync(t *testing.T) {
 			wantPendings: nil,
 			wantPlanneds: nil,
 			wantRunnings: []*model.Deployment{rollingBack},
-			wantHeads: map[string]*model.Deployment{
-				"app-4": rollingBack,
-			},
-			wantCursors: []string{""},
+			wantCursors:  []string{""},
 		},
 		// Regression guard for the server-side pagination contract: the
 		// ListNotCompletedDeployments handler runs an unordered query, so
@@ -148,12 +132,7 @@ func TestSync(t *testing.T) {
 			wantPendings: []*model.Deployment{pending},
 			wantPlanneds: []*model.Deployment{planned},
 			wantRunnings: []*model.Deployment{running},
-			wantHeads: map[string]*model.Deployment{
-				"app-1": pending,
-				"app-2": planned,
-				"app-3": running,
-			},
-			wantCursors: []string{""},
+			wantCursors:  []string{""},
 		},
 	}
 
@@ -171,7 +150,6 @@ func TestSync(t *testing.T) {
 			assert.Equal(t, tc.wantPendings, s.ListPendings())
 			assert.Equal(t, tc.wantPlanneds, s.ListPlanneds())
 			assert.Equal(t, tc.wantRunnings, s.ListRunnings())
-			assert.Equal(t, tc.wantHeads, s.ListAppHeadDeployments())
 			assert.Equal(t, tc.wantCursors, fc.gotCursors)
 		})
 	}
