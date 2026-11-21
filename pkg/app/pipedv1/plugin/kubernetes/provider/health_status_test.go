@@ -22,6 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -1017,6 +1018,140 @@ metadata:
 `,
 			health: sdk.ResourceHealthStateHealthy,
 			msg:    `"cleanup" was applied successfully`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests := mustParseManifests(t, tt.manifest)
+			require.Len(t, manifests, 1)
+
+			got, gotMsg := manifests[0].calculateHealthStatus()
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}
+
+func TestServiceHealthStatus(t *testing.T) {
+	tests := []struct {
+		name   string
+		obj    *corev1.Service
+		health sdk.ResourceHealthStatus
+		msg    string
+	}{
+		{
+			name: "cluster ip",
+			obj: &corev1.Service{
+				Spec: corev1.ServiceSpec{Type: corev1.ServiceTypeClusterIP},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+		},
+		{
+			name: "load balancer without ingress points",
+			obj: &corev1.Service{
+				Spec: corev1.ServiceSpec{Type: corev1.ServiceTypeLoadBalancer},
+			},
+			health: sdk.ResourceHealthStateUnknown,
+			msg:    "Ingress points for the load-balancer are in progress",
+		},
+		{
+			name: "load balancer with ingress points",
+			obj: &corev1.Service{
+				Spec: corev1.ServiceSpec{Type: corev1.ServiceTypeLoadBalancer},
+				Status: corev1.ServiceStatus{
+					LoadBalancer: corev1.LoadBalancerStatus{
+						Ingress: []corev1.LoadBalancerIngress{{IP: "203.0.113.10"}},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := serviceHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}
+
+func TestIngressHealthStatus(t *testing.T) {
+	tests := []struct {
+		name   string
+		obj    *networkingv1.Ingress
+		health sdk.ResourceHealthStatus
+		msg    string
+	}{
+		{
+			name:   "without ingress points",
+			obj:    &networkingv1.Ingress{},
+			health: sdk.ResourceHealthStateUnknown,
+			msg:    "Ingress points for the load-balancer are in progress",
+		},
+		{
+			name: "with ingress points",
+			obj: &networkingv1.Ingress{
+				Status: networkingv1.IngressStatus{
+					LoadBalancer: networkingv1.IngressLoadBalancerStatus{
+						Ingress: []networkingv1.IngressLoadBalancerIngress{{Hostname: "example.com"}},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := ingressHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}
+
+func TestCalculateHealthStatus_network(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest string
+		health   sdk.ResourceHealthStatus
+		msg      string
+	}{
+		{
+			name: "service",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - ip: 203.0.113.10
+`,
+			health: sdk.ResourceHealthStateHealthy,
+		},
+		{
+			name: "ingress",
+			manifest: `
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+`,
+			health: sdk.ResourceHealthStateUnknown,
+			msg:    "Ingress points for the load-balancer are in progress",
 		},
 	}
 

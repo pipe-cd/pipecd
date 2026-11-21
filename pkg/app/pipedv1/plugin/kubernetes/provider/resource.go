@@ -25,6 +25,7 @@ import (
 const (
 	// Service
 	KindService = "Service"
+	KindIngress = "Ingress"
 
 	// Workload
 	KindDeployment  = "Deployment"
