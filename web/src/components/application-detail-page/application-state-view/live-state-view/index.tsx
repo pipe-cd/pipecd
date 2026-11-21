@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { ResourceState } from "~~/model/application_live_state_pb";
 import DeployTargetTabBar from "./deploy-target-tab-bar";
@@ -37,6 +37,14 @@ export const LiveStateView: FC<Props> = ({ resources: allResources }) => {
   )
     ? deployTargetTabSelected
     : deployTargetList[0] ?? "";
+
+  // Remember the fallback, so a refresh that adds an earlier-sorted target
+  // doesn't switch away from the one being shown.
+  useEffect(() => {
+    if (selectedDeployTarget !== deployTargetTabSelected) {
+      setDeployTargetTabSelected(selectedDeployTarget);
+    }
+  }, [selectedDeployTarget, deployTargetTabSelected]);
 
   const resources = useMemo(() => {
     if (!selectedDeployTarget) return [];

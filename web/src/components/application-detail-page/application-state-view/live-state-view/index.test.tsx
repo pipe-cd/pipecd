@@ -70,3 +70,32 @@ test("render nothing when every deploy target disappears", () => {
   expect(screen.queryAllByRole("tab")).toHaveLength(0);
   expect(screen.queryAllByTestId("application-resource")).toHaveLength(0);
 });
+
+test("keep the shown deploy target when an earlier-sorted one appears", () => {
+  const { rerender } = render(
+    <LiveStateView resources={resourcesApplicationList} />,
+    {}
+  );
+  expect(screen.getByRole("tab", { name: "kubernetes" })).toHaveAttribute(
+    "aria-selected",
+    "true"
+  );
+
+  rerender(
+    <LiveStateView
+      resources={[
+        ...resourcesApplicationList,
+        {
+          ...resourcesApplicationList[0],
+          id: "alpha-1",
+          deployTarget: "alpha",
+        },
+      ]}
+    />
+  );
+
+  expect(screen.getByRole("tab", { name: "kubernetes" })).toHaveAttribute(
+    "aria-selected",
+    "true"
+  );
+});
