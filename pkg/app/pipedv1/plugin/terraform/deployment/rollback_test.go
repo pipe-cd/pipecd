@@ -85,6 +85,9 @@ func TestPlugin_executeRollbackStage(t *testing.T) {
 			Client: sdk.NewClient(nil, "terraform", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), toolregistrytest.NewTestToolRegistry(t)),
 			Logger: zap.NewNop(),
 		}, dts)
-		assert.Equal(t, sdk.StageStatusSuccess, got)
+		require.Equal(t, sdk.StageStatusSuccess, got)
+		state, err := os.ReadFile(filepath.Join(appDir, "terraform.tfstate"))
+		require.NoError(t, err)
+		assert.Contains(t, string(state), `"previous"`)
 	})
 }

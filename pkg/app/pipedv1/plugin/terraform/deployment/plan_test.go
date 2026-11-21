@@ -81,7 +81,7 @@ func TestPlugin_executePlanStage(t *testing.T) {
 		p := &Plugin{}
 		got := p.executePlanStage(context.Background(), &sdk.ExecuteStageInput[config.ApplicationConfigSpec]{
 			Request: sdk.ExecuteStageRequest[config.ApplicationConfigSpec]{
-				StageConfig: []byte(`{}`),
+				StageConfig: []byte(`{"exitOnNoChanges": true}`),
 				TargetDeploymentSource: sdk.DeploymentSource[config.ApplicationConfigSpec]{
 					ApplicationDirectory: appDir,
 					ApplicationConfig: &sdk.ApplicationConfig[config.ApplicationConfigSpec]{

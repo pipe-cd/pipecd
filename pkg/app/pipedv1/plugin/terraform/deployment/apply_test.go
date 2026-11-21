@@ -68,7 +68,10 @@ func TestPlugin_executeApplyStage(t *testing.T) {
 			Client: sdk.NewClient(nil, "terraform", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), toolregistrytest.NewTestToolRegistry(t)),
 			Logger: zap.NewNop(),
 		}, dts)
-		assert.Equal(t, sdk.StageStatusSuccess, got)
+		require.Equal(t, sdk.StageStatusSuccess, got)
+		state, err := os.ReadFile(filepath.Join(appDir, "terraform.tfstate"))
+		require.NoError(t, err)
+		assert.Contains(t, string(state), `"hello"`)
 	})
 
 	t.Run("failure when terraform config is invalid", func(t *testing.T) {
@@ -84,6 +87,36 @@ func TestPlugin_executeApplyStage(t *testing.T) {
 					ApplicationDirectory: appDir,
 					ApplicationConfig: &sdk.ApplicationConfig[config.ApplicationConfigSpec]{
 						Spec: &config.ApplicationConfigSpec{TerraformVersion: "1.12.0"},
+					},
+				},
+			},
+			Client: sdk.NewClient(nil, "terraform", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), toolregistrytest.NewTestToolRegistry(t)),
+			Logger: zap.NewNop(),
+		}, dts)
+		assert.Equal(t, sdk.StageStatusFailure, got)
+	})
+
+	t.Run("failure when terraform apply fails", func(t *testing.T) {
+		t.Parallel()
+
+		appDir := t.TempDir()
+		require.NoError(t, os.WriteFile(filepath.Join(appDir, "main.tf"), []byte(`resource "terraform_data" "example" {
+  input = "hello"
+}
+`), 0o644))
+
+		p := &Plugin{}
+		got := p.executeApplyStage(context.Background(), &sdk.ExecuteStageInput[config.ApplicationConfigSpec]{
+			Request: sdk.ExecuteStageRequest[config.ApplicationConfigSpec]{
+				TargetDeploymentSource: sdk.DeploymentSource[config.ApplicationConfigSpec]{
+					ApplicationDirectory: appDir,
+					ApplicationConfig: &sdk.ApplicationConfig[config.ApplicationConfigSpec]{
+						Spec: &config.ApplicationConfigSpec{
+							TerraformVersion: "1.12.0",
+							CommandFlags: config.TerraformCommandFlags{
+								Apply: []string{"-invalid-flag"},
+							},
+						},
 					},
 				},
 			},
