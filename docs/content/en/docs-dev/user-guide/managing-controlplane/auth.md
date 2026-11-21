@@ -44,7 +44,7 @@ PipeCD supports any OIDC provider, with tested providers including Keycloak, Aut
 Requirements and Troubleshooting:
 
 - The OIDC provider must provide claims for user's roles and username.
-- Roles claim value must use the same values as pre-configured project RBAC Roles.
+- Roles claim values are matched against the project's User Groups (see [Configuring the PipeCD's user groups](#configuring-the-pipecds-user-groups)), and the user gets the roles assigned to the matched groups. For backward compatibility, a claim value that is exactly a built-in role name (`Admin`, `Editor`, `Viewer`) is also accepted as that role, but only when no User Group matches it (a User Group mapping always takes precedence).
 - Claims can be retrieved from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if the issuer supports it.
 - You can use set a custom claim key name for roles and username in the OIDC provider. Using `usernameClaimKey` and `rolesClaimKey` in the configuration. If not set, the default value will be chosen in the following order:
 
@@ -52,7 +52,7 @@ Requirements and Troubleshooting:
   - Supported Claims Key for Role (in order of priority): `groups`, `roles`, `cognito:groups`, `custom:roles`, `custom:groups`
 
 - If no usable claims are found, `Unable to find user` error will be shown.
-- If no roles are found, user can not access any resources. (If `allowStrayAsViewer` is set to `true`, user can access as a viewer)
+- If the claim values resolve to no role (the claim is missing, or none of its values match a User Group or a built-in role name), the login is rejected. If `allowStrayAsViewer` is set to `true`, the user is logged in as a viewer instead.
 
 Provider Configuration Examples:
 
@@ -252,7 +252,9 @@ resources=*;actions=*
 
 #### Configuring the PipeCD's user groups
 
-User Group represents a relation with a specific team (GitHub)/group (Google) and an arbitrary role. All users belong to a team/group will have all permissions of that team/group.
+User Group represents a relation with a specific team (GitHub)/group (Google)/roles claim value (OIDC) and an arbitrary role. All users belong to a team/group will have all permissions of that team/group.
+
+In case of using OIDC, the PipeCD user group must be set to the value emitted in the roles claim (e.g. the Keycloak group name `team-a`). This allows the same OIDC provider to grant different roles per project.
 
 In case of using the GitHub team as a PipeCD user group, the PipeCD user group must be set in lowercase. For example, if your GitHub team is named `ORG/ABC-TEAM`, the PipeCD user group would be set as `ORG/abc-team`. (It's follow the GitHub team URL as github.com/orgs/{organization-name}/teams/{TEAM-NAME})
 
