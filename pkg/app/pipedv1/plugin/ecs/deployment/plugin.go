@@ -89,7 +89,7 @@ func (p *ECSPlugin) ExecuteStage(
 		}, nil
 	case StageECSRollback:
 		return &sdk.ExecuteStageResponse{
-			Status: p.executeECSRollbackStage(ctx, input, deployTargets[0]),
+			Status: p.executeECSRollbackStage(ctx, input, deployTargets[0], provider.DefaultRegistry()),
 		}, nil
 	case StageECSPrimaryRollout:
 		return &sdk.ExecuteStageResponse{
