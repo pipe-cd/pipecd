@@ -339,10 +339,10 @@ func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 	configs := make(map[ResourceKey]Manifest)
 	for _, m := range manifests {
 		if m.IsConfigMap() {
-			configs[m.Key()] = m
+			configs[m.Key().normalize()] = m
 		}
 		if m.IsSecret() {
-			configs[m.Key()] = m
+			configs[m.Key().normalize()] = m
 		}
 	}
 	return configs

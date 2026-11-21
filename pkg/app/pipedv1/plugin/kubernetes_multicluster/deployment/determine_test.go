@@ -1077,6 +1077,198 @@ data:
 			wantSummary:  "Sync progressively because ConfigMap my-config was updated",
 		},
 		{
+			name: "configmap namespace changed from omitted to default selects quick sync",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			},
+			wantStrategy: sdk.SyncStrategyQuickSync,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
+		{
+			name: "configmap namespace changed from default to omitted selects quick sync",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+`,
+			},
+			wantStrategy: sdk.SyncStrategyQuickSync,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
+		{
+			name: "secret namespace changed from omitted to default selects quick sync",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+data:
+  key: dmFsdWU=
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			},
+			wantStrategy: sdk.SyncStrategyQuickSync,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
+		{
+			name: "secret namespace changed from default to omitted selects quick sync",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+data:
+  key: dmFsdWU=
+`,
+			},
+			wantStrategy: sdk.SyncStrategyQuickSync,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
+		{
 			name: "scaling",
 			olds: []string{
 				`
