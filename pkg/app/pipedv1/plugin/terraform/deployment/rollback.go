@@ -24,7 +24,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// TODO: add test
 func (p *Plugin) executeRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
 	slp, err := input.Client.StageLogPersister()
 	if err != nil {
