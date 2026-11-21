@@ -113,8 +113,11 @@ func (r *DiffListResult) TotalOutOfSync() int {
 	return len(r.Adds) + len(r.Deletes) + len(r.Changes)
 }
 
-func DiffList(liveManifests, desiredManifests []Manifest, logger *zap.Logger, opts ...diff.Option) (*DiffListResult, error) {
-	adds, deletes, newChanges, oldChanges := groupManifests(liveManifests, desiredManifests)
+// DiffList compares the given two lists of manifests.
+// defaultNamespace is the namespace where the manifests without a namespace are placed in the cluster,
+// so a manifest without a namespace and the one in that namespace are treated as the same resource.
+func DiffList(liveManifests, desiredManifests []Manifest, defaultNamespace string, logger *zap.Logger, opts ...diff.Option) (*DiffListResult, error) {
+	adds, deletes, newChanges, oldChanges := groupManifests(liveManifests, desiredManifests, defaultNamespace)
 	result := &DiffListResult{
 		Adds:    adds,
 		Deletes: deletes,
@@ -140,18 +143,18 @@ func DiffList(liveManifests, desiredManifests []Manifest, logger *zap.Logger, op
 	return result, nil
 }
 
-func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChanges []Manifest) {
+func groupManifests(olds, news []Manifest, defaultNamespace string) (adds, deletes, newChanges, oldChanges []Manifest) {
 	// Sort the manifests before comparing.
 	sort.Slice(news, func(i, j int) bool {
-		return news[i].Key().normalize().String() < news[j].Key().normalize().String()
+		return news[i].Key().normalize(defaultNamespace).String() < news[j].Key().normalize(defaultNamespace).String()
 	})
 	sort.Slice(olds, func(i, j int) bool {
-		return olds[i].Key().normalize().String() < olds[j].Key().normalize().String()
+		return olds[i].Key().normalize(defaultNamespace).String() < olds[j].Key().normalize(defaultNamespace).String()
 	})
 
 	var n, o int
 	for n < len(news) && o < len(olds) {
-		if news[n].Key().normalize().String() == olds[o].Key().normalize().String() {
+		if news[n].Key().normalize(defaultNamespace).String() == olds[o].Key().normalize(defaultNamespace).String() {
 			newChanges = append(newChanges, news[n])
 			oldChanges = append(oldChanges, olds[o])
 			n++
@@ -159,7 +162,7 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 			continue
 		}
 		// Has in news but not in olds so this should be a added one.
-		if news[n].Key().normalize().String() < olds[o].Key().normalize().String() {
+		if news[n].Key().normalize(defaultNamespace).String() < olds[o].Key().normalize(defaultNamespace).String() {
 			adds = append(adds, news[n])
 			n++
 			continue

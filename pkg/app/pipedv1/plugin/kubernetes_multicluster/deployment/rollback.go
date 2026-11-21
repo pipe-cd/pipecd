@@ -215,7 +215,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		lp.Errorf("Failed while getting live resources (%v)", err)
 		failed = true
 	case len(namespacedLiveResources)+len(clusterScopedLiveResources) > 0:
-		removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+		removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources, provider.ResolveDefaultNamespace(deployTargetConfig.KubeConfigPath))
 		if len(removeKeys) == 0 {
 			lp.Info("There are no live resources to prune")
 		} else {

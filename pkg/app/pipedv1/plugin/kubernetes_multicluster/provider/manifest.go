@@ -285,11 +285,11 @@ func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	pairs := make([]WorkloadPair, 0)
 	oldMap := make(map[ResourceKey]Manifest, len(olds))
 	for _, m := range olds {
-		key := m.Key().normalize()
+		key := m.Key().normalize(DefaultNamespace)
 		oldMap[key] = m
 	}
 	for _, n := range news {
-		key := n.Key().normalize()
+		key := n.Key().normalize(DefaultNamespace)
 		if o, ok := oldMap[key]; ok {
 			pairs = append(pairs, WorkloadPair{
 				Old: o,
