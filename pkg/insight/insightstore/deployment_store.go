@@ -125,6 +125,10 @@ func (s *store) ListCompletedDeployments(ctx context.Context, projectID string, 
 		}
 	}
 
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].CompletedAt < out[j].CompletedAt
+	})
+
 	return out, nil
 }
 

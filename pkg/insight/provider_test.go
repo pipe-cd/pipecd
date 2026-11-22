@@ -90,6 +90,31 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "unsorted deployments daily resolution",
+			ds: []*DeploymentData{
+				{
+					CompletedAt: 1669661030,
+				},
+				{
+					CompletedAt: 1669574625,
+				},
+				{
+					CompletedAt: 1669574635,
+				},
+			},
+			resolution: model.InsightResolution_DAILY,
+			expected: []*model.InsightDataPoint{
+				{
+					Timestamp: 1669507200,
+					Value:     2,
+				},
+				{
+					Timestamp: 1669593600,
+					Value:     1,
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -188,6 +213,43 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 				},
 				{
 					Timestamp: 1667260800,
+					Value:     0.5,
+				},
+			},
+		},
+		{
+			name: "unsorted deployments daily resolution",
+			ds: []*DeploymentData{
+				{
+					CompletedAt:    1669686600,
+					CompleteStatus: model.DeploymentStatus_DEPLOYMENT_FAILURE.String(),
+				},
+				{
+					CompletedAt: 1669340910,
+				},
+				{
+					CompletedAt: 1669686610,
+				},
+				{
+					CompletedAt:    1669600130,
+					CompleteStatus: model.DeploymentStatus_DEPLOYMENT_FAILURE.String(),
+				},
+				{
+					CompletedAt: 1669340920,
+				},
+			},
+			resolution: model.InsightResolution_DAILY,
+			expected: []*model.InsightDataPoint{
+				{
+					Timestamp: 1669334400,
+					Value:     0,
+				},
+				{
+					Timestamp: 1669593600,
+					Value:     1,
+				},
+				{
+					Timestamp: 1669680000,
 					Value:     0.5,
 				},
 			},
@@ -299,6 +361,37 @@ func TestFillUpDataPoints(t *testing.T) {
 				{Timestamp: 1667260800, Value: 3},
 				{Timestamp: 1669852800, Value: 0},
 				{Timestamp: 1672531200, Value: 0},
+			},
+		},
+		{
+			name: "daily resolution: points with timestamp before from are skipped without stalling",
+			ds: []*model.InsightDataPoint{
+				{Timestamp: 43200, Value: 1}, // before 86400
+				{Timestamp: 172800, Value: 2},
+			},
+			from:       86400,
+			to:         259200,
+			resolution: model.InsightResolution_DAILY,
+			want: []*model.InsightDataPoint{
+				{Timestamp: 86400, Value: 0},
+				{Timestamp: 172800, Value: 2},
+				{Timestamp: 259200, Value: 0},
+			},
+		},
+		{
+			name: "daily resolution: duplicate timestamp points do not stall index pointer",
+			ds: []*model.InsightDataPoint{
+				{Timestamp: 86400, Value: 1},
+				{Timestamp: 86400, Value: 1},
+				{Timestamp: 259200, Value: 3},
+			},
+			from:       86400,
+			to:         259200,
+			resolution: model.InsightResolution_DAILY,
+			want: []*model.InsightDataPoint{
+				{Timestamp: 86400, Value: 1},
+				{Timestamp: 172800, Value: 0},
+				{Timestamp: 259200, Value: 3},
 			},
 		},
 	}

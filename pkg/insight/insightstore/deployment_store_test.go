@@ -583,3 +583,57 @@ func TestOverlap(t *testing.T) {
 		})
 	}
 }
+
+func TestListCompletedDeployments(t *testing.T) {
+	var (
+		fs = newFakeFileStore()
+		s  = &store{
+			fileStore:     fs,
+			chunkMaxCount: 2,
+			logger:        zap.NewNop(),
+		}
+		projectID = "test-project"
+		ctx       = context.TODO()
+		date2022  = time.Date(2022, 11, 5, 6, 0, 0, 0, time.UTC).Unix()
+	)
+
+	chunk0 := DeploymentChunk{
+		ChunkID: "chunk_0",
+		Deployments: []*insight.DeploymentData{
+			{ID: "d-3", CompletedAt: date2022 + 300},
+			{ID: "d-1", CompletedAt: date2022 + 100},
+		},
+	}
+	chunk1 := DeploymentChunk{
+		ChunkID: "chunk_1",
+		Deployments: []*insight.DeploymentData{
+			{ID: "d-4", CompletedAt: date2022 + 400},
+			{ID: "d-2", CompletedAt: date2022 + 200},
+		},
+	}
+	err := s.saveChunk(ctx, projectID, "block_2022", &chunk0)
+	require.NoError(t, err)
+	err = s.saveChunk(ctx, projectID, "block_2022", &chunk1)
+	require.NoError(t, err)
+
+	block := DeploymentBlockMetadata{
+		BlockID: "block_2022",
+		ChunkMetadata: []*DeploymentChunkMetadata{
+			{ChunkID: "chunk_0", MinTimestamp: date2022 + 100, MaxTimestamp: date2022 + 300},
+			{ChunkID: "chunk_1", MinTimestamp: date2022 + 200, MaxTimestamp: date2022 + 400},
+		},
+	}
+	err = s.saveBlockMetadata(ctx, projectID, &block)
+	require.NoError(t, err)
+
+	got, err := s.ListCompletedDeployments(ctx, projectID, date2022, date2022+500)
+	require.NoError(t, err)
+
+	expected := []*insight.DeploymentData{
+		{ID: "d-1", CompletedAt: date2022 + 100},
+		{ID: "d-2", CompletedAt: date2022 + 200},
+		{ID: "d-3", CompletedAt: date2022 + 300},
+		{ID: "d-4", CompletedAt: date2022 + 400},
+	}
+	assert.Equal(t, expected, got)
+}
