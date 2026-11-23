@@ -17,6 +17,7 @@ package trigger
 import (
 	"context"
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
@@ -210,9 +211,11 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 //  2. If pass (1) and any of changed files are listed in includes, app is considered as touched
 //  3. If any changes are under the app dir, app is considered as touched
 func isTouchedByChangedFiles(appDir string, includes, excludes []string, changedFiles []string) (bool, error) {
-	if !strings.HasSuffix(appDir, "/") {
-		appDir += "/"
-	}
+	// An empty path or "." means the application is placed at the repository root,
+	// so every changed file is inside the application directory.
+	appDir = path.Clean(appDir)
+	isRootDir := appDir == "."
+	appDir += "/"
 
 	// If any changed files matches the specified "excludes"
 	// this application is consided as not touched.
@@ -241,7 +244,7 @@ func isTouchedByChangedFiles(appDir string, includes, excludes []string, changed
 
 	// It's considered any files changed inside the application directory as touched.
 	for _, cf := range changedFiles {
-		if ok := strings.HasPrefix(cf, appDir); ok {
+		if isRootDir || strings.HasPrefix(cf, appDir) {
 			return true, nil
 		}
 	}
