@@ -196,7 +196,7 @@ At least one of `min` or `max` is required.
 | method | string | HTTP method. | No |
 | headers | [][AnalysisHTTPHeader](#analysishttpheader) | Request headers. | No |
 | expectedCode | int | Expected HTTP status code. | No |
-| expectedResponse | string | Expected response body. | No |
+| expectedResponse | string | Expected response body. The body must match exactly, including whitespace and newlines. Leave empty to validate only the HTTP status code. | No |
 | interval | duration | How often the request is sent. | Yes |
 | failureLimit | int | Number of failed checks tolerated before the analysis fails. | No (default `0`) |
 | skipOnNoData | bool | Treat "no data returned" as a success. | No (default `false`) |
