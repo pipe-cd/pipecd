@@ -236,7 +236,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.runningDSP = deploysource.NewProvider(
 			filepath.Join(s.workingDir, "running-deploysource"),
 			deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
-			s.deployment.GetGitPath(),
+			runningGitPath(s.deployment.GetGitPath(), s.deployment.RunningConfigFilename),
 			s.secretDecrypter,
 		)
 	}
