@@ -234,6 +234,15 @@ spec:
   name: test-app
 `
 
+	const pipelineAppConfig = `apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: test-app
+  pipeline:
+    stages:
+      - name: WAIT
+`
+
 	newTestApp := func() *model.Application {
 		return &model.Application{
 			Id:   "app-1",
@@ -460,5 +469,57 @@ spec:
 		assert.Contains(t, res.Error, "[plugin-fail-2]")
 		assert.Contains(t, res.Error, "service unavailable 2")
 		assert.Equal(t, []string{"plugin-fail-1", "plugin-fail-2"}, res.PluginNames)
+	})
+
+	t.Run("success propagates plugin-selected PIPELINE strategy", func(t *testing.T) {
+		t.Parallel()
+
+		pipelinePlugin := &fakePluginClient{
+			name: "plugin-pipeline",
+			strategyResp: &deployment.DetermineStrategyResponse{
+				SyncStrategy: model.SyncStrategy_PIPELINE,
+			},
+			planPreviewResp: &planpreviewapi.GetPlanPreviewResponse{
+				Results: []*planpreviewapi.PlanPreviewResult{
+					{
+						DeployTarget: "dt-1",
+						Summary:      "1 to change",
+						Details:      []byte("~ resource"),
+					},
+				},
+			},
+		}
+
+		b := &builder{
+			apiClient: &fakeAPIClient{
+				resp: &pipedservice.GetApplicationMostRecentDeploymentResponse{
+					Deployment: &model.ApplicationDeploymentReference{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{Hash: "running-commit"},
+						},
+					},
+				},
+			},
+			pluginRegistry: &fakePluginRegistry{
+				plugins: []pluginapi.PluginClient{pipelinePlugin},
+			},
+			pipedCfg:   &config.PipedSpec{PipedID: "piped-1"},
+			repoCfg:    config.PipedRepository{Branch: "main"},
+			workingDir: t.TempDir(),
+			logger:     zap.NewNop(),
+		}
+		repo := &fakeGitRepo{
+			appPath: "app",
+			configByRev: map[string]string{
+				"running-commit": pipelineAppConfig,
+				"target-commit":  pipelineAppConfig,
+			},
+		}
+
+		res := b.buildApp(context.Background(), 1, "cmd-1", newTestApp(), repo, "target-commit")
+		require.Empty(t, res.Error)
+		assert.Equal(t, model.SyncStrategy_PIPELINE, res.SyncStrategy)
+		assert.Equal(t, []string{"plugin-pipeline"}, res.PluginNames)
+		assert.True(t, pipelinePlugin.gotRunningSource)
 	})
 }
