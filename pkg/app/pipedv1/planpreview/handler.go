@@ -253,16 +253,16 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 		PipedId:   cmd.PipedId,
 	}
 
-	reportError := func(err error) {
+	reportError := func(cmdErr error) {
 		metrics.HandledCommand(metrics.StatusFailure, time.Since(start))
 
-		result.Error = err.Error()
+		result.Error = cmdErr.Error()
 		output, err := json.Marshal(result)
 		if err != nil {
 			logger.Error("failed to marshal command result", zap.Error(err))
 		}
 
-		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, output); err != nil {
+		if err := cmd.ReportError(ctx, model.CommandStatus_COMMAND_FAILED, cmdErr, output); err != nil {
 			logger.Error("failed to report command status", zap.Error(err))
 			return
 		}

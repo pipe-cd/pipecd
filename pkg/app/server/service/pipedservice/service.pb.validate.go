@@ -5446,6 +5446,8 @@ func (m *ReportCommandHandledRequest) validate(all bool) error {
 
 	// no validation rules for Output
 
+	// no validation rules for HandledReason
+
 	if len(errors) > 0 {
 		return ReportCommandHandledRequestMultiError(errors)
 	}
