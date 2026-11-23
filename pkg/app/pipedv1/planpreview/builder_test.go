@@ -426,21 +426,27 @@ spec:
 		assert.Equal(t, "plugin-active", res.PluginPlanResults[0].PluginName)
 	})
 
-	t.Run("failure when plugin GetPlanPreview returns an error", func(t *testing.T) {
+	t.Run("failure when multiple plugins return GetPlanPreview errors", func(t *testing.T) {
 		t.Parallel()
 
-		failingPlugin := &fakePluginClient{
-			name:           "plugin-fail",
-			planPreviewErr: status.Error(codes.Internal, "internal failure"),
+		failingPlugin1 := &fakePluginClient{
+			name:           "plugin-fail-1",
+			planPreviewErr: status.Error(codes.Internal, "internal failure 1"),
+		}
+		failingPlugin2 := &fakePluginClient{
+			name:           "plugin-fail-2",
+			planPreviewErr: status.Error(codes.Unavailable, "service unavailable 2"),
 		}
 
 		b := &builder{
-			apiClient:      &fakeAPIClient{err: status.Error(codes.NotFound, "not found")},
-			pluginRegistry: &fakePluginRegistry{plugins: []pluginapi.PluginClient{failingPlugin}},
-			pipedCfg:       &config.PipedSpec{PipedID: "piped-1"},
-			repoCfg:        config.PipedRepository{Branch: "main"},
-			workingDir:     t.TempDir(),
-			logger:         zap.NewNop(),
+			apiClient: &fakeAPIClient{err: status.Error(codes.NotFound, "not found")},
+			pluginRegistry: &fakePluginRegistry{
+				plugins: []pluginapi.PluginClient{failingPlugin1, failingPlugin2},
+			},
+			pipedCfg:   &config.PipedSpec{PipedID: "piped-1"},
+			repoCfg:    config.PipedRepository{Branch: "main"},
+			workingDir: t.TempDir(),
+			logger:     zap.NewNop(),
 		}
 		repo := &fakeGitRepo{
 			appPath:     "app",
@@ -449,7 +455,10 @@ spec:
 
 		res := b.buildApp(context.Background(), 1, "cmd-1", newTestApp(), repo, "target-commit")
 		assert.Contains(t, res.Error, "failed to get plan preview")
-		assert.Contains(t, res.Error, "[plugin-fail]")
-		assert.Equal(t, []string{"plugin-fail"}, res.PluginNames)
+		assert.Contains(t, res.Error, "[plugin-fail-1]")
+		assert.Contains(t, res.Error, "internal failure 1")
+		assert.Contains(t, res.Error, "[plugin-fail-2]")
+		assert.Contains(t, res.Error, "service unavailable 2")
+		assert.Equal(t, []string{"plugin-fail-1", "plugin-fail-2"}, res.PluginNames)
 	})
 }
