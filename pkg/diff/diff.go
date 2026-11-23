@@ -144,6 +144,10 @@ func DiffStructureds(x, y any, opts ...Option) (*Result, error) {
 }
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
+	if !vx.IsValid() && !vy.IsValid() {
+		return nil
+	}
+
 	if !vx.IsValid() {
 		if d.equateEmpty && isEmptyInterface(vy) {
 			return nil
@@ -358,7 +362,7 @@ func (d *differ) diffBool(path []PathStep, vx, vy reflect.Value) error {
 }
 
 func (d *differ) diffNumber(path []PathStep, vx, vy reflect.Value) error {
-	if floatNumber(vx) == floatNumber(vy) {
+	if equalNumbers(vx, vy) {
 		return nil
 	}
 
@@ -403,14 +407,56 @@ func floatNumber(v reflect.Value) float64 {
 	switch v.Kind() {
 	case reflect.Float32, reflect.Float64:
 		return v.Float()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return float64(v.Uint())
 	default:
 		return float64(v.Int())
 	}
 }
 
+func isSignedInt(k reflect.Kind) bool {
+	switch k {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return true
+	default:
+		return false
+	}
+}
+
+func isUnsignedInt(k reflect.Kind) bool {
+	switch k {
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return true
+	default:
+		return false
+	}
+}
+
+func equalNumbers(vx, vy reflect.Value) bool {
+	kx, ky := vx.Kind(), vy.Kind()
+	if isSignedInt(kx) && isSignedInt(ky) {
+		return vx.Int() == vy.Int()
+	}
+	if isUnsignedInt(kx) && isUnsignedInt(ky) {
+		return vx.Uint() == vy.Uint()
+	}
+	if isSignedInt(kx) && isUnsignedInt(ky) {
+		ix := vx.Int()
+		return ix >= 0 && uint64(ix) == vy.Uint()
+	}
+	if isUnsignedInt(kx) && isSignedInt(ky) {
+		iy := vy.Int()
+		return iy >= 0 && vx.Uint() == uint64(iy)
+	}
+
+	return floatNumber(vx) == floatNumber(vy)
+}
+
 func isNumberValue(v reflect.Value) bool {
 	switch v.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Float32, reflect.Float64:
 		return true
 	default:
 		return false
@@ -419,10 +465,19 @@ func isNumberValue(v reflect.Value) bool {
 
 func convertToNumber(v reflect.Value) (reflect.Value, bool) {
 	switch v.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Float32, reflect.Float64:
 		return v, true
 	case reflect.String:
-		if n, err := strconv.ParseFloat(v.String(), 64); err == nil {
+		s := v.String()
+		if n, err := strconv.ParseInt(s, 10, 64); err == nil {
+			return reflect.ValueOf(n), true
+		}
+		if n, err := strconv.ParseUint(s, 10, 64); err == nil {
+			return reflect.ValueOf(n), true
+		}
+		if n, err := strconv.ParseFloat(s, 64); err == nil {
 			return reflect.ValueOf(n), true
 		}
 		return v, false
