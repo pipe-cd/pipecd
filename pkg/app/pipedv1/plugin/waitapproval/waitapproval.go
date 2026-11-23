@@ -62,11 +62,22 @@ func (p *plugin) checkApproval(ctx context.Context, minApproverNum int, lp sdk.S
 		lp.Errorf("Failed to get approved users: %v", err)
 		return false
 	}
-	// approvedUsersMap contains previously approved users and newly approved users.
-	approvedUsersMap := make(map[string]bool)
+	// approvedUsers contains previously approved users and newly approved users.
+	approvedUsers := make([]string, 0, len(existingApprovedUsers))
+	approvedUsersMap := make(map[string]bool, len(existingApprovedUsers))
 	for _, user := range existingApprovedUsers {
+		if approvedUsersMap[user] {
+			continue
+		}
 		approvedUsersMap[user] = true
+		approvedUsers = append(approvedUsers, user)
 	}
+	if len(approvedUsers) >= minApproverNum {
+		return p.reportApproval(ctx, minApproverNum, approvedUsers, lp, client)
+	}
+
+	// ListStageCommands keeps waiting for new commands and does not stop on its own,
+	// so the progress is reported each time a new user approves.
 	for cmd, err := range client.ListStageCommands(ctx, sdk.CommandTypeApproveStage) {
 		if err != nil {
 			lp.Errorf("Failed to list stage commands: %v", err)
@@ -77,33 +88,31 @@ func (p *plugin) checkApproval(ctx context.Context, minApproverNum int, lp sdk.S
 		}
 		lp.Infof("Got approval from %q", cmd.Commander)
 		approvedUsersMap[cmd.Commander] = true
-		if len(approvedUsersMap) >= minApproverNum {
-			break
+		approvedUsers = append(approvedUsers, cmd.Commander)
+		if p.reportApproval(ctx, minApproverNum, approvedUsers, lp, client) {
+			return true
 		}
-	}
-	approvedUsers := make([]string, 0, len(approvedUsersMap))
-	for user := range approvedUsersMap {
-		approvedUsers = append(approvedUsers, user)
-	}
-
-	if len(approvedUsers) > 0 {
-		aus := strings.Join(approvedUsers, ", ")
-		displayMsg := fmt.Sprintf("Approved by: %s", aus)
-		if err := client.PutStageMetadata(ctx, sdk.MetadataKeyStageApprovedUsers, aus); err != nil {
-			lp.Errorf("failed to save approved users: %v", err)
-		}
-		if err := client.PutStageMetadata(ctx, sdk.MetadataKeyStageDisplay, displayMsg); err != nil {
-			lp.Errorf("failed to save display message: %v", err)
-		}
-		if remain := minApproverNum - len(approvedUsers); remain > 0 {
-			lp.Infof("Waiting for %d more approver(s)...", remain)
-			return false
-		}
-		lp.Infof("Received all needed approvals")
-		lp.Infof("This stage has been approved by %d user(s) (%s)", minApproverNum, aus)
-		return true
 	}
 	return false
+}
+
+// reportApproval saves the approved users and reports whether there are enough approvals.
+func (p *plugin) reportApproval(ctx context.Context, minApproverNum int, approvedUsers []string, lp sdk.StageLogPersister, client StageClient) bool {
+	aus := strings.Join(approvedUsers, ", ")
+	displayMsg := fmt.Sprintf("Approved by: %s", aus)
+	if err := client.PutStageMetadata(ctx, sdk.MetadataKeyStageApprovedUsers, aus); err != nil {
+		lp.Errorf("failed to save approved users: %v", err)
+	}
+	if err := client.PutStageMetadata(ctx, sdk.MetadataKeyStageDisplay, displayMsg); err != nil {
+		lp.Errorf("failed to save display message: %v", err)
+	}
+	if remain := minApproverNum - len(approvedUsers); remain > 0 {
+		lp.Infof("Waiting for %d more approver(s)...", remain)
+		return false
+	}
+	lp.Infof("Received all needed approvals")
+	lp.Infof("This stage has been approved by %d user(s) (%s)", minApproverNum, aus)
+	return true
 }
 
 // getApprovedUsers gets the list of approved users.
