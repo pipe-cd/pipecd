@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
@@ -77,10 +78,22 @@ func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.Deploym
 }
 
 func mergeVars(deployTargetVars []string, appVars []string) []string {
-	// TODO: Validate duplication
 	mergedVars := make([]string, 0, len(deployTargetVars)+len(appVars))
-	mergedVars = append(mergedVars, deployTargetVars...)
-	mergedVars = append(mergedVars, appVars...)
+	seen := make(map[string]struct{}, len(deployTargetVars)+len(appVars))
+
+	add := func(vars []string) {
+		for _, v := range vars {
+			key, _, _ := strings.Cut(v, "=")
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			mergedVars = append(mergedVars, v)
+		}
+	}
+
+	add(deployTargetVars)
+	add(appVars)
 	return mergedVars
 }
 
