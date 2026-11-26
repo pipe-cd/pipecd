@@ -19,10 +19,7 @@ To deploy your application to run continuously or to place it behind a load bala
 
 If you're not familiar with ECS, you can get examples for those files from [here](../../../../examples/#ecs-applications).
 
-Note:
-
-You can generate an application config file easily and interactively by [`pipectl init`](/docs-dev/user-guide/command-line-tool/#generating-an-application-config-apppipecdyaml).
-
+Create an `app.pipecd.yaml` file in your application directory using the [quick sync example](#quick-sync) for `ECSApp` below.
 
 ## Quick sync
 
