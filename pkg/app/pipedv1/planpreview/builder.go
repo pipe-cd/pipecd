@@ -316,7 +316,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		return
 	}
 
-	result.NoChange = noChange
+	result.NoChange = noChange && len(result.PluginPlanResults) > 0
 	return
 }
 

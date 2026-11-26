@@ -194,9 +194,10 @@ func (r *fakePluginRegistry) GetPluginClientsByAppConfig(_ *config.GenericApplic
 
 type fakePluginClient struct {
 	pluginapi.PluginClient
-	name     string
-	noChange bool
-	err      error
+	name         string
+	noChange     bool
+	emptyResults bool
+	err          error
 }
 
 func (p *fakePluginClient) Name() string {
@@ -212,6 +213,9 @@ func (p *fakePluginClient) DetermineStrategy(_ context.Context, _ *deployment.De
 func (p *fakePluginClient) GetPlanPreview(_ context.Context, _ *planpreviewapi.GetPlanPreviewRequest, _ ...grpc.CallOption) (*planpreviewapi.GetPlanPreviewResponse, error) {
 	if p.err != nil {
 		return nil, p.err
+	}
+	if p.emptyResults {
+		return &planpreviewapi.GetPlanPreviewResponse{}, nil
 	}
 	return &planpreviewapi.GetPlanPreviewResponse{
 		Results: []*planpreviewapi.PlanPreviewResult{
@@ -270,6 +274,20 @@ func TestBuilder_buildApp_NoChange(t *testing.T) {
 			},
 			wantNoChange: false,
 			wantErr:      true,
+		},
+		{
+			name: "all plugins return Unimplemented",
+			plugins: []pluginapi.PluginClient{
+				&fakePluginClient{name: "plugin-1", err: status.Error(codes.Unimplemented, "unimplemented")},
+			},
+			wantNoChange: false,
+		},
+		{
+			name: "plugin returns empty results",
+			plugins: []pluginapi.PluginClient{
+				&fakePluginClient{name: "plugin-1", emptyResults: true},
+			},
+			wantNoChange: false,
 		},
 	}
 
