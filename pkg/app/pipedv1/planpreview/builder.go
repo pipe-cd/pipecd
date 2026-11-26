@@ -281,6 +281,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 	logger.Info("successfully decided sync strategy for the application", zap.String("strategy", result.SyncStrategy.String()))
 
 	errors := ""
+	noChange := true
 	for _, plugin := range plugins {
 		result.PluginNames = append(result.PluginNames, plugin.Name())
 		res, err := plugin.GetPlanPreview(ctx, &planpreviewapi.GetPlanPreviewRequest{
@@ -306,7 +307,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 				PlanDetails:  r.GetDetails(),
 				DiffLanguage: r.GetDiffLanguage(),
 			})
-			r.NoChange = r.NoChange && result.GetNoChange()
+			noChange = noChange && r.GetNoChange()
 		}
 	}
 
@@ -315,6 +316,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		return
 	}
 
+	result.NoChange = noChange
 	return
 }
 
