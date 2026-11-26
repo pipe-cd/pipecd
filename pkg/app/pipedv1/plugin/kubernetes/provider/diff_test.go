@@ -52,6 +52,86 @@ metadata:
 			diffNum:  0,
 		},
 		{
+			name: "ConfigMap no diff when namespace is omitted vs default",
+			manifests: `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "ConfigMap no diff when namespace is default vs omitted",
+			manifests: `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff when namespace is omitted vs default",
+			manifests: `apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+data:
+  password: hoge
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  password: hoge
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff when namespace is default vs omitted",
+			manifests: `apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  password: hoge
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+data:
+  password: hoge
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
 			name: "Secret no diff 2",
 			manifests: `apiVersion: apps/v1
 kind: Secret

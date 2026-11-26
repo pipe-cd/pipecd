@@ -35,9 +35,23 @@ const (
 )
 
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
+	oldBody := old.body
+	newBody := new.body
+
+	if old.Key().normalize() == new.Key().normalize() {
+		if (old.Key().Namespace() == DefaultNamespace && new.Key().Namespace() == "") ||
+			(old.Key().Namespace() == "" && new.Key().Namespace() == DefaultNamespace) {
+			oldBody = oldBody.DeepCopy()
+			newBody = newBody.DeepCopy()
+			oldBody.SetNamespace(DefaultNamespace)
+			newBody.SetNamespace(DefaultNamespace)
+		}
+	}
+
 	if old.IsSecret() && new.IsSecret() {
 		var err error
-		old.body, err = normalizeNewSecret(old.body, new.body)
+		oldBody = oldBody.DeepCopy()
+		oldBody, err = normalizeNewSecret(oldBody, newBody)
 		if err != nil {
 			return nil, err
 		}
@@ -45,16 +59,16 @@ func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Res
 
 	key := old.Key().String()
 
-	normalizedOld, err := remarshal(old.body)
+	normalizedOld, err := remarshal(oldBody)
 	if err != nil {
 		logger.Info("compare manifests directly since it was unable to remarshal old Kubernetes manifest to normalize special fields", zap.Error(err))
-		return diff.DiffUnstructureds(*old.body, *new.body, key, opts...)
+		return diff.DiffUnstructureds(*oldBody, *newBody, key, opts...)
 	}
 
-	normalizedNew, err := remarshal(new.body)
+	normalizedNew, err := remarshal(newBody)
 	if err != nil {
 		logger.Info("compare manifests directly since it was unable to remarshal new Kubernetes manifest to normalize special fields", zap.Error(err))
-		return diff.DiffUnstructureds(*old.body, *new.body, key, opts...)
+		return diff.DiffUnstructureds(*oldBody, *newBody, key, opts...)
 	}
 
 	return diff.DiffUnstructureds(*normalizedOld, *normalizedNew, key, opts...)
