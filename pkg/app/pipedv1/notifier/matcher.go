@@ -102,7 +102,7 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 		}
 
 		for k, v := range m.labels {
-			if labels[k] != v {
+			if value, ok := labels[k]; !ok || value != v {
 				return false
 			}
 		}
