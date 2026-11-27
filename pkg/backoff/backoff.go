@@ -16,6 +16,7 @@ package backoff
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -32,7 +33,14 @@ func NewError(err error, retriable bool) *Error {
 }
 
 func (e *Error) Error() string {
+	if e.Err == nil {
+		return ""
+	}
 	return e.Err.Error()
+}
+
+func (e *Error) Unwrap() error {
+	return e.Err
 }
 
 type Backoff interface {
@@ -83,6 +91,7 @@ func (r *retry) WaitNext(ctx context.Context) bool {
 	}
 
 	t := time.NewTimer(d)
+	defer t.Stop()
 	select {
 	case <-ctx.Done():
 		return false
@@ -104,10 +113,16 @@ func (r *retry) Do(ctx context.Context, operation func() (any, error)) (any, err
 		if err == nil {
 			return data, nil
 		}
-		if e, ok := err.(*Error); ok {
-			err = e.Err
-			if !e.Retriable {
+		var bErr *Error
+		if errors.As(err, &bErr) {
+			if !bErr.Retriable {
+				if err == bErr {
+					return nil, bErr.Err
+				}
 				return nil, err
+			}
+			if err == bErr {
+				err = bErr.Err
 			}
 		}
 	}

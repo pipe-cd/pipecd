@@ -16,6 +16,7 @@ package backoff
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -39,4 +40,44 @@ func TestExponential(t *testing.T) {
 
 	eb.Reset()
 	assert.Equal(t, 0, eb.Calls())
+}
+
+func TestExponential_Clone(t *testing.T) {
+	t.Parallel()
+
+	eb := NewExponential(time.Millisecond, time.Second)
+	_ = eb.Next()
+	assert.Equal(t, 1, eb.Calls())
+
+	clone := eb.Clone()
+	assert.Equal(t, 0, clone.Calls())
+	assert.Equal(t, time.Duration(0), clone.Next())
+	assert.Equal(t, 1, clone.Calls())
+
+	// Verify that clones can be called concurrently without data race.
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		c := eb.Clone()
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 50; j++ {
+				_ = c.Next()
+			}
+		}()
+	}
+	wg.Wait()
+}
+
+func TestExponential_NilRand(t *testing.T) {
+	t.Parallel()
+
+	eb := &exponential{
+		base: time.Millisecond,
+		max:  time.Second,
+	}
+	assert.Equal(t, time.Duration(0), eb.Next())
+	d := eb.Next()
+	assert.True(t, d >= 0)
+	assert.True(t, d <= time.Second)
 }

@@ -45,7 +45,13 @@ func (b *exponential) Next() time.Duration {
 		return 0
 	}
 	d := math.Min(float64(b.max), float64(b.base)*math.Pow(2, float64(b.calls-1)))
-	d *= b.rand.Float64()
+	var r float64
+	if b.rand != nil {
+		r = b.rand.Float64()
+	} else {
+		r = rand.Float64()
+	}
+	d *= r
 	return time.Duration(d)
 }
 
@@ -61,6 +67,6 @@ func (b *exponential) Clone() Backoff {
 	return &exponential{
 		base: b.base,
 		max:  b.max,
-		rand: b.rand,
+		rand: rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 	}
 }
