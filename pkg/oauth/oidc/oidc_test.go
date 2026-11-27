@@ -109,6 +109,54 @@ func TestDecideRole(t *testing.T) {
 			expected: nil,
 			err:      fmt.Errorf("no role found in claims"),
 		},
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"myorg/myteam", "myorg/myteam/subteam"},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: true,
+					UserGroups:         nil,
+				},
+			},
+			expected: &model.Role{
+				ProjectId:        "project-id",
+				ProjectRbacRoles: []string{model.BuiltinRBACRoleViewer.String()},
+			},
+			err: nil,
+		},
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"myorg/myteam", model.BuiltinRBACRoleEditor.String()},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: true,
+					UserGroups:         nil,
+				},
+			},
+			expected: &model.Role{
+				ProjectId:        "project-id",
+				ProjectRbacRoles: []string{model.BuiltinRBACRoleEditor.String()},
+			},
+			err: nil,
+		},
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"myorg/myteam", "myorg/myteam/subteam"},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: false,
+					UserGroups:         nil,
+				},
+			},
+			expected: nil,
+			err:      fmt.Errorf("no role found in claims"),
+		},
 	}
 
 	for _, c := range cases {
