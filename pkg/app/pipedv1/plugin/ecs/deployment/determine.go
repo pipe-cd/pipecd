@@ -32,7 +32,7 @@ type containerImage struct {
 
 // parseContainerImage parses an ECS container image reference into its components.
 //
-// Supported formats: [registry/]name[:tag|@digest]
+// Supported formats: [registry/]name[:tag][@digest]
 func parseContainerImage(image string) (img containerImage) {
 	ref := image
 
@@ -44,16 +44,23 @@ func parseContainerImage(image string) (img containerImage) {
 	parts := strings.Split(ref, "/")
 	last := parts[len(parts)-1]
 
-	// Extract tag from the last segment only when there is no digest
-	if img.digest == "" {
-		if idx := strings.LastIndex(last, ":"); idx != -1 {
-			img.tag = last[idx+1:]
-			last = last[:idx]
-		}
+	// Extract tag from the last segment, so that a registry port is not taken as the tag
+	if idx := strings.LastIndex(last, ":"); idx != -1 {
+		img.tag = last[idx+1:]
+		last = last[:idx]
 	}
 
 	img.name = last
 	return
+}
+
+// version returns the digest, or the tag when the image has no digest.
+// The digest is preferred because it decides which image is actually deployed.
+func (img containerImage) version() string {
+	if img.digest != "" {
+		return img.digest
+	}
+	return img.tag
 }
 
 // containerImages returns a map of container names to their images in the task definition that have both a name and an image set.
@@ -89,15 +96,7 @@ func determineStrategy(running, target types.TaskDefinition) *sdk.DetermineStrat
 			ri := parseContainerImage(runningImage)
 			ti := parseContainerImage(targetImage)
 			if ri.name == ti.name {
-				riVer := ri.tag
-				if riVer == "" {
-					riVer = ri.digest
-				}
-				tiVer := ti.tag
-				if tiVer == "" {
-					tiVer = ti.digest
-				}
-				changes = append(changes, fmt.Sprintf("image %s from %s to %s", ri.name, riVer, tiVer))
+				changes = append(changes, fmt.Sprintf("image %s from %s to %s", ri.name, ri.version(), ti.version()))
 			} else {
 				changes = append(changes, fmt.Sprintf("image %s to %s", runningImage, targetImage))
 			}
@@ -141,12 +140,8 @@ func determineVersions(taskDef types.TaskDefinition) []sdk.ArtifactVersion {
 	versions := make([]sdk.ArtifactVersion, 0, len(imageMap))
 	for i := range imageMap {
 		image := parseContainerImage(i)
-		version := image.tag
-		if version == "" {
-			version = image.digest
-		}
 		versions = append(versions, sdk.ArtifactVersion{
-			Version: version,
+			Version: image.version(),
 			Name:    image.name,
 			URL:     i,
 		})

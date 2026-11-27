@@ -75,6 +75,16 @@ func TestParseContainerImage(t *testing.T) {
 			image: "gcr.io/myproject/myapp@sha256:abcdef1234567890",
 			want:  containerImage{name: "myapp", digest: "sha256:abcdef1234567890"},
 		},
+		{
+			name:  "tag and digest",
+			image: "nginx:1.21@sha256:abcdef1234567890",
+			want:  containerImage{name: "nginx", tag: "1.21", digest: "sha256:abcdef1234567890"},
+		},
+		{
+			name:  "registry with port, tag and digest",
+			image: "my-registry:5000/app:v1@sha256:abcdef1234567890",
+			want:  containerImage{name: "app", tag: "v1", digest: "sha256:abcdef1234567890"},
+		},
 		// Multi-level path
 		{
 			name:  "multi-level path with tag",
@@ -258,6 +268,23 @@ func TestDetermineStrategy(t *testing.T) {
 				Summary:  "Sync progressively because of updating image nginx from sha256:aaaa to sha256:bbbb",
 			},
 		},
+		{
+			name: "digest updated with the same tag -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21@sha256:aaaa")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21@sha256:bbbb")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating image nginx from sha256:aaaa to sha256:bbbb",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -307,6 +334,17 @@ func TestDetermineVersions(t *testing.T) {
 			},
 			want: []sdk.ArtifactVersion{
 				{Name: "nginx", Version: "1.21", URL: "nginx:1.21"},
+			},
+		},
+		{
+			name: "image with tag and digest",
+			taskDef: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Image: aws.String("nginx:1.21@sha256:abcdef1234567890")},
+				},
+			},
+			want: []sdk.ArtifactVersion{
+				{Name: "nginx", Version: "sha256:abcdef1234567890", URL: "nginx:1.21@sha256:abcdef1234567890"},
 			},
 		},
 		{
