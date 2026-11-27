@@ -71,6 +71,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 		result, err := provider.DiffList(
 			oldManifests,
 			newManifests,
+			provider.DefaultNamespace,
 			input.Logger,
 			diff.WithEquateEmpty(),
 			diff.WithCompareNumberAndNumericString(),
@@ -132,6 +133,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 		result, err := provider.DiffList(
 			oldManifests,
 			newManifests,
+			provider.DefaultNamespace,
 			input.Logger,
 			diff.WithEquateEmpty(),
 			diff.WithCompareNumberAndNumericString(),
