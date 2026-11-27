@@ -1,0 +1,74 @@
+package main
+
+import (
+	"context"
+	"testing"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+)
+
+// The list of stages changes whenever a stage is added, so this checks what
+// must always hold instead of listing them.
+func TestFetchDefinedStages(t *testing.T) {
+	t.Parallel()
+
+	stages := (&plugin{}).FetchDefinedStages()
+	if len(stages) == 0 {
+		t.Fatal("a plugin must define at least one stage")
+	}
+	seen := make(map[string]struct{}, len(stages))
+	for _, s := range stages {
+		if s == "" {
+			t.Error("a stage name must not be empty")
+		}
+		if _, dup := seen[s]; dup {
+			t.Errorf("the stage %q is defined twice", s)
+		}
+		seen[s] = struct{}{}
+	}
+}
+
+func TestBuildPipelineSyncStages(t *testing.T) {
+	t.Parallel()
+
+	input := &sdk.BuildPipelineSyncStagesInput{
+		Request: sdk.BuildPipelineSyncStagesRequest{
+			Stages: []sdk.StageConfig{
+{{- range $i, $s := .Stages}}
+				{Index: {{$i}}, Name: {{quote $s.Name}}},
+{{- end}}
+			},
+		},
+	}
+
+	resp, err := (&plugin{}).BuildPipelineSyncStages(context.Background(), nil, input)
+	if err != nil {
+		t.Fatalf("BuildPipelineSyncStages() returned an error: %v", err)
+	}
+
+	if len(resp.Stages) != len(input.Request.Stages) {
+		t.Fatalf("got %d stages, want %d", len(resp.Stages), len(input.Request.Stages))
+	}
+	for i, got := range resp.Stages {
+		want := input.Request.Stages[i]
+		if got.Name != want.Name || got.Index != want.Index {
+			t.Errorf("stage %d = {%s %d}, want {%s %d}", i, got.Name, got.Index, want.Name, want.Index)
+		}
+		if got.Rollback {
+			t.Errorf("stage %d must not be a rollback stage", i)
+		}
+	}
+}
+
+func TestExecuteStageRejectsUnknownStage(t *testing.T) {
+	t.Parallel()
+
+	// The stages of this plugin are UPPER_SNAKE_CASE, so this name is not one of them.
+	input := &sdk.ExecuteStageInput[struct{}]{
+		Request: sdk.ExecuteStageRequest[struct{}]{StageName: "unknown-stage"},
+	}
+
+	if _, err := (&plugin{}).ExecuteStage(context.Background(), nil, nil, input); err == nil {
+		t.Fatal("ExecuteStage() must return an error for a stage the plugin does not define")
+	}
+}

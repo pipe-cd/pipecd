@@ -1,0 +1,18 @@
+package main
+
+import (
+	"log"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+)
+
+func main() {
+	p, err := sdk.NewPlugin({{quote .PluginVersion}}, sdk.WithStagePlugin(&plugin{}))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := p.Run(); err != nil {
+		log.Fatalln(err)
+	}
+}
