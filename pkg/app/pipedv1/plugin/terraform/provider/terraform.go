@@ -327,7 +327,8 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 var (
 	// Import block was introduced from Terraform v1.5.0.
 	// Keep this regex for backward compatibility.
-	planHasChangeRegex  = regexp.MustCompile(`(?m)^Plan:(?: (\d+) to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy\.$`)
+	// Terraform v1.14.0 and later append "Actions: N to invoke." when the plan invokes actions.
+	planHasChangeRegex  = regexp.MustCompile(`(?m)^Plan:(?: (\d+) to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy\.(?: Actions: \d+ to invoke\.)?$`)
 	planHasOutputsRegex = regexp.MustCompile(`(?m)^Changes to Outputs:$`)
 )
 
