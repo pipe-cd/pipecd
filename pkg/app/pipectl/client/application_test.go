@@ -86,6 +86,78 @@ func TestSyncApplicationReturnsNotFoundForMissingCommand(t *testing.T) {
 	require.Contains(t, err.Error(), commandID)
 }
 
+func TestSyncApplicationSucceeds(t *testing.T) {
+	const (
+		commandID    = "command-id"
+		deploymentID = "deployment-id"
+	)
+
+	cli := &fakeAPIClient{
+		syncApplication: func(context.Context, *apiservice.SyncApplicationRequest, ...grpc.CallOption) (*apiservice.SyncApplicationResponse, error) {
+			return &apiservice.SyncApplicationResponse{
+				CommandId: commandID,
+			}, nil
+		},
+		getCommand: func(context.Context, *apiservice.GetCommandRequest, ...grpc.CallOption) (*apiservice.GetCommandResponse, error) {
+			return &apiservice.GetCommandResponse{
+				Command: &model.Command{
+					Type:   model.Command_SYNC_APPLICATION,
+					Status: model.CommandStatus_COMMAND_SUCCEEDED,
+					Metadata: map[string]string{
+						model.MetadataKeyTriggeredDeploymentID: deploymentID,
+					},
+				},
+			}, nil
+		},
+	}
+
+	gotID, err := SyncApplication(
+		context.Background(),
+		cli,
+		"app-id",
+		model.SyncStrategy_AUTO,
+		time.Millisecond,
+		time.Second,
+		zap.NewNop(),
+	)
+	require.NoError(t, err)
+	require.Equal(t, deploymentID, gotID)
+}
+
+func TestSyncApplicationRejectsInvalidCheckInterval(t *testing.T) {
+	tests := []struct {
+		name          string
+		checkInterval time.Duration
+	}{
+		{name: "zero", checkInterval: 0},
+		{name: "negative", checkInterval: -time.Second},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			calls := 0
+			cli := &fakeAPIClient{
+				syncApplication: func(context.Context, *apiservice.SyncApplicationRequest, ...grpc.CallOption) (*apiservice.SyncApplicationResponse, error) {
+					calls++
+					return &apiservice.SyncApplicationResponse{CommandId: "command-id"}, nil
+				},
+			}
+			_, err := SyncApplication(
+				context.Background(),
+				cli,
+				"app-id",
+				model.SyncStrategy_AUTO,
+				tc.checkInterval,
+				time.Second,
+				zap.NewNop(),
+			)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "check-interval")
+			require.Zero(t, calls)
+		})
+	}
+}
+
 func TestSyncApplicationReturnsErrorOnUnsuccessfulCommand(t *testing.T) {
 	tests := []struct {
 		name    string

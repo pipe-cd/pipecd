@@ -37,6 +37,10 @@ func SyncApplication(
 	checkInterval, timeout time.Duration,
 	logger *zap.Logger,
 ) (string, error) {
+	if checkInterval <= 0 {
+		return "", fmt.Errorf("check-interval must be a positive duration, got %v", checkInterval)
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 

@@ -29,6 +29,101 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+func TestWaitDeploymentStatusesSucceeds(t *testing.T) {
+	const deploymentID = "deployment-id"
+
+	cli := &fakeAPIClient{
+		getDeployment: func(context.Context, *apiservice.GetDeploymentRequest, ...grpc.CallOption) (*apiservice.GetDeploymentResponse, error) {
+			return &apiservice.GetDeploymentResponse{
+				Deployment: &model.Deployment{
+					Id:     deploymentID,
+					Status: model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+				},
+			}, nil
+		},
+	}
+
+	err := WaitDeploymentStatuses(
+		context.Background(),
+		cli,
+		deploymentID,
+		[]model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+		time.Hour,
+		time.Hour,
+		zap.NewNop(),
+	)
+	require.NoError(t, err)
+}
+
+func TestWaitDeploymentStatusesSucceedsAfterStatusTransition(t *testing.T) {
+	const deploymentID = "deployment-id"
+	calls := 0
+
+	cli := &fakeAPIClient{
+		getDeployment: func(context.Context, *apiservice.GetDeploymentRequest, ...grpc.CallOption) (*apiservice.GetDeploymentResponse, error) {
+			calls++
+			s := model.DeploymentStatus_DEPLOYMENT_RUNNING
+			if calls >= 3 {
+				s = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+			}
+			return &apiservice.GetDeploymentResponse{
+				Deployment: &model.Deployment{
+					Id:     deploymentID,
+					Status: s,
+				},
+			}, nil
+		},
+	}
+
+	err := WaitDeploymentStatuses(
+		context.Background(),
+		cli,
+		deploymentID,
+		[]model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+		time.Millisecond,
+		time.Second,
+		zap.NewNop(),
+	)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, calls, 3)
+}
+
+func TestWaitDeploymentStatusesRejectsInvalidCheckInterval(t *testing.T) {
+	tests := []struct {
+		name          string
+		checkInterval time.Duration
+	}{
+		{name: "zero", checkInterval: 0},
+		{name: "negative", checkInterval: -time.Second},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			calls := 0
+			cli := &fakeAPIClient{
+				getDeployment: func(context.Context, *apiservice.GetDeploymentRequest, ...grpc.CallOption) (*apiservice.GetDeploymentResponse, error) {
+					calls++
+					return &apiservice.GetDeploymentResponse{
+						Deployment: &model.Deployment{Status: model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+					}, nil
+				},
+			}
+			err := WaitDeploymentStatuses(
+				context.Background(),
+				cli,
+				"deployment-id",
+				[]model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+				tc.checkInterval,
+				time.Second,
+				zap.NewNop(),
+			)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "check-interval")
+			require.Zero(t, calls)
+		})
+	}
+}
+
 func TestWaitDeploymentStatusesReturnsNotFound(t *testing.T) {
 	const deploymentID = "missing-deployment"
 
