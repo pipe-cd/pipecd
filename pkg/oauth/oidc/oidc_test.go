@@ -109,6 +109,103 @@ func TestDecideRole(t *testing.T) {
 			expected: nil,
 			err:      fmt.Errorf("no role found in claims"),
 		},
+		// Claim values are mapped to roles via the project user groups.
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"team-a"},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{SsoGroup: "team-a", Role: model.BuiltinRBACRoleEditor.String()},
+					},
+				},
+			},
+			expected: &model.Role{
+				ProjectId:        "project-id",
+				ProjectRbacRoles: []string{model.BuiltinRBACRoleEditor.String()},
+			},
+			err: nil,
+		},
+		// A user group can map to a custom RBAC role.
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"team-a", "team-b"},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{SsoGroup: "team-a", Role: "custom-role"},
+					},
+				},
+			},
+			expected: &model.Role{
+				ProjectId:        "project-id",
+				ProjectRbacRoles: []string{"custom-role"},
+			},
+			err: nil,
+		},
+		// A user group takes precedence over the built-in role name of the same value.
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{model.BuiltinRBACRoleAdmin.String()},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{SsoGroup: model.BuiltinRBACRoleAdmin.String(), Role: model.BuiltinRBACRoleViewer.String()},
+					},
+				},
+			},
+			expected: &model.Role{
+				ProjectId:        "project-id",
+				ProjectRbacRoles: []string{model.BuiltinRBACRoleViewer.String()},
+			},
+			err: nil,
+		},
+		// Claim values that match neither a user group nor a built-in role are rejected.
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"team-b"},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{SsoGroup: "team-a", Role: model.BuiltinRBACRoleEditor.String()},
+					},
+				},
+			},
+			expected: nil,
+			err:      fmt.Errorf("no role found in claims"),
+		},
+		// ... unless AllowStrayAsViewer is set.
+		{
+			claims: jwt.MapClaims{
+				"groups": []any{"team-b"},
+			},
+			oc: &OAuthClient{
+				project: &model.Project{
+					Id:                 "project-id",
+					AllowStrayAsViewer: true,
+					UserGroups: []*model.ProjectUserGroup{
+						{SsoGroup: "team-a", Role: model.BuiltinRBACRoleEditor.String()},
+					},
+				},
+			},
+			expected: &model.Role{
+				ProjectId:        "project-id",
+				ProjectRbacRoles: []string{model.BuiltinRBACRoleViewer.String()},
+			},
+			err: nil,
+		},
 	}
 
 	for _, c := range cases {

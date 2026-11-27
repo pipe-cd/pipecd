@@ -183,32 +183,41 @@ func (c *OAuthClient) decideRole(claims jwt.MapClaims, roleClaimKey string) (rol
 		}
 	}
 
-	// Check if the current user belongs to any registered teams.
+	// Map the claim values to the project RBAC roles via the user groups
+	// registered in the project, in the same way as the GitHub provider does.
+	groups := make(map[string]string, len(c.project.UserGroups))
+	for _, g := range c.project.UserGroups {
+		groups[g.SsoGroup] = g.Role
+	}
+
 	for _, r := range roleStrings {
-		if r == model.BuiltinRBACRoleAdmin.String() {
-			role.ProjectRbacRoles = append(role.ProjectRbacRoles, model.BuiltinRBACRoleAdmin.String())
+		if v, ok := groups[r]; ok {
+			role.ProjectRbacRoles = append(role.ProjectRbacRoles, v)
+			continue
 		}
-		if r == model.BuiltinRBACRoleEditor.String() {
-			role.ProjectRbacRoles = append(role.ProjectRbacRoles, model.BuiltinRBACRoleEditor.String())
+		// For backward compatibility, a claim value that is exactly
+		// a built-in role name is still accepted as that role.
+		switch r {
+		case model.BuiltinRBACRoleAdmin.String(),
+			model.BuiltinRBACRoleEditor.String(),
+			model.BuiltinRBACRoleViewer.String():
+			role.ProjectRbacRoles = append(role.ProjectRbacRoles, r)
 		}
-		if r == model.BuiltinRBACRoleViewer.String() {
-			role.ProjectRbacRoles = append(role.ProjectRbacRoles, model.BuiltinRBACRoleViewer.String())
-		}
+	}
+
+	if len(role.ProjectRbacRoles) != 0 {
+		return
 	}
 
 	// In case the current user does not have any role
 	// if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
-	if c.project.AllowStrayAsViewer && len(roleStrings) == 0 {
+	if c.project.AllowStrayAsViewer {
 		role.ProjectRbacRoles = []string{model.BuiltinRBACRoleViewer.String()}
 		return
 	}
 
-	if len(roleStrings) == 0 {
-		err = fmt.Errorf("no role found in claims")
-		return
-	}
-
+	err = fmt.Errorf("no role found in claims")
 	return
 }
 
