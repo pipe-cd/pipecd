@@ -8,10 +8,7 @@ description: >
 
 Based on the application configuration and the pull request changes, PipeCD plans how to execute the deployment: doing quick sync or doing progressive sync with the specified pipeline.
 
-Note:
-
-You can generate an application config file easily and interactively by [`pipectl init`](/docs-dev/user-guide/command-line-tool/#generating-an-application-config-apppipecdyaml).
-
+Create an `app.pipecd.yaml` file in your application directory using the [quick sync example](#quick-sync) for `KubernetesApp` below.
 
 ## Quick sync
 
