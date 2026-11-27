@@ -163,7 +163,44 @@ func DecideRevisionName(sm ServiceManifest, commit string) (string, error) {
 	return fmt.Sprintf("%s-%s-%s", sm.Name, tag, commit), nil
 }
 
+// FindImageTag returns the tag of the service's container image.
+// It is only used to build the revision name.
+//
+// It keeps the original parsing on purpose: the executor recomputes the name of
+// the running revision from the running commit, so changing how the tag is
+// parsed would change the names of revisions that are already deployed, and
+// traffic would be routed to a revision that does not exist.
+// Use FindImageVersion to get the version of the image.
 func FindImageTag(sm ServiceManifest) (string, error) {
+	image, err := findContainerImage(sm)
+	if err != nil {
+		return "", err
+	}
+	return legacyImageTag(image), nil
+}
+
+// legacyImageTag returns the image tag the way it has always been parsed for revision names.
+// Do not change it, see FindImageTag.
+func legacyImageTag(image string) string {
+	parts := strings.Split(image, ":")
+	if len(parts) == 2 {
+		return parts[1]
+	}
+	return ""
+}
+
+// FindImageVersion returns the version of the service's container image.
+// It is the image digest, or the image tag when the image has no digest.
+func FindImageVersion(sm ServiceManifest) (string, error) {
+	image, err := findContainerImage(sm)
+	if err != nil {
+		return "", err
+	}
+	_, tag, digest := parseContainerImage(image)
+	return imageVersion(tag, digest), nil
+}
+
+func findContainerImage(sm ServiceManifest) (string, error) {
 	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
 	if err != nil {
 		return "", err
@@ -184,19 +221,35 @@ func FindImageTag(sm ServiceManifest) (string, error) {
 	if !ok || image == "" {
 		return "", fmt.Errorf("image was missing")
 	}
-	_, tag := parseContainerImage(image)
-
-	return tag, nil
+	return image, nil
 }
 
-func parseContainerImage(image string) (name, tag string) {
-	parts := strings.Split(image, ":")
-	if len(parts) == 2 {
-		tag = parts[1]
+// parseContainerImage parses an image reference in the format of
+// [registry/]name[:tag][@digest] into its name, tag and digest.
+func parseContainerImage(image string) (name, tag, digest string) {
+	// Split off the digest first, so that "@sha256:<digest>" is not taken as the tag.
+	if idx := strings.Index(image, "@"); idx != -1 {
+		digest = image[idx+1:]
+		image = image[:idx]
 	}
-	paths := strings.Split(parts[0], "/")
+	// Look for the tag only in the last path segment, so that a registry
+	// port such as "localhost:5000" is not taken as the tag.
+	paths := strings.Split(image, "/")
 	name = paths[len(paths)-1]
+	if idx := strings.LastIndex(name, ":"); idx != -1 {
+		tag = name[idx+1:]
+		name = name[:idx]
+	}
 	return
+}
+
+// imageVersion returns the digest, or the tag when the image has no digest.
+// The digest is preferred because it decides which image is actually deployed.
+func imageVersion(tag, digest string) string {
+	if digest != "" {
+		return digest
+	}
+	return tag
 }
 
 func FindArtifactVersions(sm ServiceManifest) ([]*model.ArtifactVersion, error) {
@@ -220,12 +273,12 @@ func FindArtifactVersions(sm ServiceManifest) ([]*model.ArtifactVersion, error) 
 	if !ok || image == "" {
 		return nil, fmt.Errorf("image was missing")
 	}
-	name, tag := parseContainerImage(image)
+	name, tag, digest := parseContainerImage(image)
 
 	return []*model.ArtifactVersion{
 		{
 			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-			Version: tag,
+			Version: imageVersion(tag, digest),
 			Name:    name,
 			Url:     image,
 		},

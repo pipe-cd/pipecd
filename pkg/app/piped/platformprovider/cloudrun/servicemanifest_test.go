@@ -15,6 +15,7 @@
 package cloudrun
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -425,3 +426,171 @@ spec:
 		})
 	}
 }
+
+func TestParseContainerImage(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name       string
+		image      string
+		wantName   string
+		wantTag    string
+		wantDigest string
+	}{
+		{
+			name:     "image with tag",
+			image:    "gcr.io/pipecd/helloworld:v0.1.0",
+			wantName: "helloworld",
+			wantTag:  "v0.1.0",
+		},
+		{
+			name:     "image without tag",
+			image:    "gcr.io/pipecd/helloworld",
+			wantName: "helloworld",
+		},
+		{
+			name:     "registry with port and tag",
+			image:    "localhost:5000/helloworld:v0.1.0",
+			wantName: "helloworld",
+			wantTag:  "v0.1.0",
+		},
+		{
+			name:     "registry with port, no tag",
+			image:    "localhost:5000/helloworld",
+			wantName: "helloworld",
+		},
+		{
+			name:       "image with tag and digest",
+			image:      "gcr.io/pipecd/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantName:   "helloworld",
+			wantTag:    "v0.1.0",
+			wantDigest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+		},
+		{
+			name:       "image with digest only",
+			image:      "gcr.io/pipecd/helloworld@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantName:   "helloworld",
+			wantDigest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+		},
+		{
+			name:       "registry with port, tag and digest",
+			image:      "localhost:5000/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantName:   "helloworld",
+			wantTag:    "v0.1.0",
+			wantDigest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			name, tag, digest := parseContainerImage(tc.image)
+			assert.Equal(t, tc.wantName, name)
+			assert.Equal(t, tc.wantTag, tag)
+			assert.Equal(t, tc.wantDigest, digest)
+		})
+	}
+}
+
+func TestFindImageVersion(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		image       string
+		wantVersion string
+	}{
+		{
+			name:        "image with tag",
+			image:       "gcr.io/pipecd/helloworld:v0.1.0",
+			wantVersion: "v0.1.0",
+		},
+		{
+			name:        "registry with port and tag",
+			image:       "localhost:5000/helloworld:v0.1.0",
+			wantVersion: "v0.1.0",
+		},
+		{
+			name:        "image with tag and digest",
+			image:       "gcr.io/pipecd/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantVersion: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+		},
+		{
+			name:        "image with digest only",
+			image:       "gcr.io/pipecd/helloworld@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantVersion: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			sm, err := ParseServiceManifest([]byte(fmt.Sprintf(imageServiceManifest, tc.image)))
+			require.NoError(t, err)
+
+			version, err := FindImageVersion(sm)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantVersion, version)
+
+			versions, err := FindArtifactVersions(sm)
+			require.NoError(t, err)
+			require.Len(t, versions, 1)
+			assert.Equal(t, "helloworld", versions[0].Name)
+			assert.Equal(t, tc.wantVersion, versions[0].Version)
+		})
+	}
+}
+
+// TestDecideRevisionNameKeepsLegacyNames makes sure that revision names stay the same
+// as before, because the executor recomputes the name of the running revision.
+func TestDecideRevisionNameKeepsLegacyNames(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name  string
+		image string
+		want  string
+	}{
+		{
+			name:  "image with tag",
+			image: "gcr.io/pipecd/helloworld:v0.1.0",
+			want:  "helloworld-v010-1234567",
+		},
+		{
+			name:  "registry with port and tag",
+			image: "localhost:5000/helloworld:v0.1.0",
+			want:  "helloworld--1234567",
+		},
+		{
+			name:  "image with tag and digest",
+			image: "gcr.io/pipecd/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:  "helloworld--1234567",
+		},
+		{
+			name:  "image with digest only",
+			image: "gcr.io/pipecd/helloworld@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:  "helloworld-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef-1234567",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			sm, err := ParseServiceManifest([]byte(fmt.Sprintf(imageServiceManifest, tc.image)))
+			require.NoError(t, err)
+
+			got, err := DecideRevisionName(sm, "12345678912345678")
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+const imageServiceManifest = `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+spec:
+  template:
+    spec:
+      containers:
+      - image: %s
+`
