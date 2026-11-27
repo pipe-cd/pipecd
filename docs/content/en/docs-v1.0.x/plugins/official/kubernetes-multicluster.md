@@ -386,7 +386,7 @@ Configured under `plugins[].deployTargets[].config` in the **piped** configurati
 | gitRemote | string | Git remote address where the chart is located. Empty means the same repository. | No |
 | ref | string | Commit SHA or tag for the remote git. | No |
 | path | string | Relative path to the chart directory (for a local chart). | No |
-| repository | string | Name of an added Helm chart repository. | No |
+| repository | string | Name of an added Helm chart repository, or an OCI reference such as `oci://registry.example.com/charts`. | No |
 | name | string | Chart name. | No |
 | version | string | Chart version. | No |
 
