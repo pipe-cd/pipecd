@@ -5,7 +5,6 @@
 | Tran Cong Khanh         | [@khanhtc1202](https://github.com/khanhtc1202)   | khanhtc1202@gmail.com                        |
 | Le Van Nghia            | [@nghialv](https://github.com/nghialv)           | nghialv2607@gmail.com                        |
 | Yoshiki Fujikane        | [@ffjlabo](https://github.com/ffjlabo)           | ffjlabo@gmail.com                            |
-| Shinnosuke Sawada-Dazai | [@Warashi](https://github.com/Warashi)           | shin@warashi.dev                             |
 | Tetsuya Kikuchi         | [@t-kikuc](https://github.com/t-kikuc)           | tkikuchi07f@gmail.com                        |
 | Eeshaan Sawant          | [eeshaanSA](https://github.com/eeshaanSA)        | eeshaans1@gmail.com                          |
 | Ngo Le Hoang            | [@armistcxy](https://github.com/armistcxy)       | adlehoang118@gmail.com                       |
