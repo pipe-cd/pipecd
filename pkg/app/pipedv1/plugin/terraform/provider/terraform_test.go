@@ -44,6 +44,11 @@ func TestPlanHasChangeRegex(t *testing.T) {
 			input:    "Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.",
 			expected: []string{"Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.", "0", "1", "2", "3"},
 		},
+		{
+			name:     "with actions to invoke",
+			input:    "Plan: 1 to add, 0 to change, 0 to destroy. Actions: 1 to invoke.",
+			expected: []string{"Plan: 1 to add, 0 to change, 0 to destroy. Actions: 1 to invoke.", "", "1", "0", "0"},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -72,6 +77,12 @@ func TestParsePlanResult(t *testing.T) {
 		{
 			name:        "later than v1.5.0",
 			input:       `Plan: 1 to import, 1 to add, 2 to change, 3 to destroy.`,
+			expected:    PlanResult{Imports: 1, Adds: 1, Changes: 2, Destroys: 3, HasStateChanges: true},
+			expectedErr: false,
+		},
+		{
+			name:        "with actions to invoke",
+			input:       `Plan: 1 to import, 1 to add, 2 to change, 3 to destroy. Actions: 2 to invoke.`,
 			expected:    PlanResult{Imports: 1, Adds: 1, Changes: 2, Destroys: 3, HasStateChanges: true},
 			expectedErr: false,
 		},
