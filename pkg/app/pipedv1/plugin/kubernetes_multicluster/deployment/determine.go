@@ -123,8 +123,24 @@ type workloadPair struct {
 	new provider.Manifest
 }
 
+// podTemplatePrefixes are the pod template paths for built-in workloads.
+// CronJob nests its pod template under jobTemplate.
+var podTemplatePrefixes = []string{
+	"spec.template",
+	"spec.jobTemplate.spec.template",
+}
+
+func podTemplateDiffs(nodes diff.Nodes) diff.Nodes {
+	var templateDiffs diff.Nodes
+	for _, prefix := range podTemplatePrefixes {
+		templateDiffs = append(templateDiffs, nodes.FindByPrefix(prefix)...)
+	}
+	return templateDiffs
+}
+
 func checkImageChange(ns diff.Nodes) (string, bool) {
-	const containerImageQuery = `^spec\.template\.spec\.containers\.\d+.image$`
+	// CronJob stores the pod template under spec.jobTemplate.spec.template.
+	const containerImageQuery = `^(?:spec\.jobTemplate\.spec\.template|spec\.template)\.spec\.containers\.\d+\.image$`
 	nodes, _ := ns.Find(containerImageQuery)
 	if len(nodes) == 0 {
 		return "", false
@@ -181,8 +197,9 @@ func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 }
 
 // determineStrategy decides the sync strategy and summary message based on the given manifests.
-// First up, checks to see if the workload's `spec.template` has been changed,
+// First up, checks to see if the workload's pod template has been changed,
 // and then checks if the configmap/secret's data.
+// CronJob keeps its pod template at spec.jobTemplate.spec.template.
 func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (strategy sdk.SyncStrategy, summary string) {
 	oldWorkloads := findWorkloadManifests(olds, workloadRefs)
 	if len(oldWorkloads) == 0 {
@@ -206,7 +223,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 		diffNodes := diffResult.Nodes()
 		diffs[w.New.Key()] = diffNodes
 
-		templateDiffs := diffNodes.FindByPrefix("spec.template")
+		templateDiffs := podTemplateDiffs(diffNodes)
 		if len(templateDiffs) > 0 {
 			if msg, changed := checkImageChange(templateDiffs); changed {
 				return sdk.SyncStrategyPipelineSync, msg
