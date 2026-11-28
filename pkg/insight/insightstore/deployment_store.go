@@ -81,12 +81,15 @@ func overlap(firstFrom, firstTo, secondFrom, secondTo int64) bool {
 }
 
 func (s *store) ListCompletedDeployments(ctx context.Context, projectID string, from, to int64) ([]*insight.DeploymentData, error) {
-	const rangeLimit time.Duration = 2 * 365 * 24 * time.Hour // 2 year
-
 	if from > to {
 		return nil, errInvalidArg
 	}
-	if float64(to-from) > rangeLimit.Seconds() {
+
+	var (
+		fromTime = time.Unix(from, 0).UTC()
+		toTime   = time.Unix(to, 0).UTC()
+	)
+	if toTime.After(fromTime.AddDate(2, 0, 0)) {
 		return nil, errLargeDuration
 	}
 

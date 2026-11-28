@@ -583,3 +583,71 @@ func TestOverlap(t *testing.T) {
 		})
 	}
 }
+
+func TestListCompletedDeploymentsDurationValidation(t *testing.T) {
+	t.Parallel()
+
+	s := &store{
+		fileStore: newFakeFileStore(),
+		logger:    zap.NewNop(),
+	}
+
+	testcases := []struct {
+		name    string
+		from    int64
+		to      int64
+		wantErr error
+	}{
+		{
+			name:    "invalid range where from is after to",
+			from:    time.Date(2024, 6, 16, 0, 0, 0, 0, time.UTC).Unix(),
+			to:      time.Date(2024, 6, 15, 0, 0, 0, 0, time.UTC).Unix(),
+			wantErr: errInvalidArg,
+		},
+		{
+			name:    "valid two-year range without leap day",
+			from:    time.Date(2021, 6, 16, 0, 0, 0, 0, time.UTC).Unix(),
+			to:      time.Date(2023, 6, 15, 23, 59, 59, 0, time.UTC).Unix(),
+			wantErr: nil,
+		},
+		{
+			name:    "valid two-year range spanning leap day",
+			from:    time.Date(2022, 6, 16, 0, 0, 0, 0, time.UTC).Unix(),
+			to:      time.Date(2024, 6, 15, 23, 59, 59, 0, time.UTC).Unix(),
+			wantErr: nil,
+		},
+		{
+			name:    "valid two-year range starting on leap day",
+			from:    time.Date(2024, 2, 29, 0, 0, 0, 0, time.UTC).Unix(),
+			to:      time.Date(2026, 2, 28, 23, 59, 59, 0, time.UTC).Unix(),
+			wantErr: nil,
+		},
+		{
+			name:    "exceeds two-year limit without leap day",
+			from:    time.Date(2021, 6, 16, 0, 0, 0, 0, time.UTC).Unix(),
+			to:      time.Date(2023, 6, 16, 0, 0, 1, 0, time.UTC).Unix(),
+			wantErr: errLargeDuration,
+		},
+		{
+			name:    "exceeds two-year limit spanning leap day",
+			from:    time.Date(2022, 6, 16, 0, 0, 0, 0, time.UTC).Unix(),
+			to:      time.Date(2024, 6, 16, 0, 0, 1, 0, time.UTC).Unix(),
+			wantErr: errLargeDuration,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := s.ListCompletedDeployments(context.Background(), "test-project", tc.from, tc.to)
+			if tc.wantErr != nil {
+				assert.ErrorIs(t, err, tc.wantErr)
+				assert.Nil(t, got)
+				return
+			}
+			require.NoError(t, err)
+			assert.Empty(t, got)
+		})
+	}
+}
