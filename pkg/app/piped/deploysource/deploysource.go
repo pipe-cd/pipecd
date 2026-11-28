@@ -167,7 +167,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	gac, ok := cfg.GetGenericApplication()
 	if !ok {
 		fmt.Fprintf(lw, "Invalid application kind %s\n", cfg.Kind)
-		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+		return nil, fmt.Errorf("unsupported application kind %s", cfg.Kind)
 	}
 	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 

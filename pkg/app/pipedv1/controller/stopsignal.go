@@ -32,7 +32,7 @@ const (
 	// StopSignalTimeout means the executor should stop its execution
 	// because of timeout.
 	StopSignalTimeout StopSignalType = "timeout"
-	// StopSignalNone means the excutor can be continuously executed.
+	// StopSignalNone means the executor can be continuously executed.
 	StopSignalNone StopSignalType = "none"
 )
 

@@ -19,7 +19,7 @@ import (
 )
 
 type SQLEnsurer interface {
-	// Run calls ensurer package funtions.
+	// Run calls ensurer package functions.
 	Run(ctx context.Context) error
 	// Close closes database connection held by client.
 	Close() error

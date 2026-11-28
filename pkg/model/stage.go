@@ -50,7 +50,7 @@ const (
 	// the BASELINE variant resources has been cleaned.
 	StageK8sBaselineClean Stage = "K8S_BASELINE_CLEAN"
 	// StageK8sTrafficRouting represents the state where the traffic to application
-	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
+	// should be split as the specified percentage to PRIMARY, CANARY, BASELINE variants.
 	StageK8sTrafficRouting Stage = "K8S_TRAFFIC_ROUTING"
 
 	// StageTerraformSync synced infrastructure with all the tf defined in Git.
@@ -89,7 +89,7 @@ const (
 	// The PRIMARY variant will serve 100% traffic after it's rolled out.
 	StageECSPrimaryRollout Stage = "ECS_PRIMARY_ROLLOUT"
 	// StageECSTrafficRouting represents the state where the traffic to application
-	// should be splitted as the specified percentage to PRIMARY/CANARY variants.
+	// should be split as the specified percentage to PRIMARY/CANARY variants.
 	StageECSTrafficRouting Stage = "ECS_TRAFFIC_ROUTING"
 	// StageECSCanaryClean represents the stage where
 	// the CANARY variant resources has been cleaned.

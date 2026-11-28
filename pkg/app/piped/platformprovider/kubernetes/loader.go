@@ -163,7 +163,7 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 		manifests, err = LoadPlainYAMLManifests(l.appDir, l.input.Manifests, l.configFileName)
 
 	default:
-		err = fmt.Errorf("unsupport templating method %v", l.templatingMethod)
+		err = fmt.Errorf("unsupported templating method %v", l.templatingMethod)
 	}
 
 	return

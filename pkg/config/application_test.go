@@ -291,7 +291,7 @@ func TestValidateEncryption(t *testing.T) {
 			wantErr:          true,
 		},
 		{
-			name:             "no target files sepcified",
+			name:             "no target files specified",
 			encryptedSecrets: map[string]string{"password": "pw"},
 			wantErr:          true,
 		},
@@ -334,7 +334,7 @@ func TestValidateAttachment(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "no target files sepcified",
+			name:    "no target files specified",
 			sources: map[string]string{"config": "config.yaml"},
 			wantErr: true,
 		},

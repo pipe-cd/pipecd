@@ -171,7 +171,7 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		})
 	}
 
-	// Start runnning apiKeyLastUsedTime updater.
+	// Start running apiKeyLastUsedTime updater.
 	{
 		updater := apikeylastusedtimeupdater.NewAPIKeyLastUsedTimeUpdater(ds, rd, input.Logger)
 		group.Go(func() error {

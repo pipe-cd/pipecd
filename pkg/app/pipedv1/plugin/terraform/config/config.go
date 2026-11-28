@@ -55,7 +55,7 @@ func (c *DeployTargetConfig) UnmarshalJSON(data []byte) error {
 // ApplicationConfigSpec represents the application-scoped plugin config.
 type ApplicationConfigSpec struct {
 	// The terraform workspace name.
-	// Empty means "default" workpsace.
+	// Empty means "default" workspace.
 	Workspace string `json:"workspace,omitempty"`
 	// The version of terraform should be used.
 	// Empty means the pre-installed version will be used.

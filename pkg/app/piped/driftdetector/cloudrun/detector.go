@@ -243,7 +243,7 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Work
 
 		gds, ok := cfg.GetGenericApplication()
 		if !ok {
-			return provider.ServiceManifest{}, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+			return provider.ServiceManifest{}, fmt.Errorf("unsupported application kind %s", cfg.Kind)
 		}
 
 		var (
@@ -275,7 +275,7 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Work
 		if encryptionUsed {
 			templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gds.Encryption, d.secretDecrypter))
 		}
-		// Then attaching configurated files to manifests.
+		// Then attaching configured files to manifests.
 		if attachmentUsed {
 			templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gds.Attachment))
 		}

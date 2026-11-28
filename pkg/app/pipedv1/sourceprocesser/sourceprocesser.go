@@ -62,7 +62,7 @@ func (p *processor) Process() error {
 	}
 
 	for _, tp := range p.templateProcessors {
-		// Rebuid the data for the template to get up to date
+		// Rebuild the data for the template to get up to date
 		// data after previous template processing.
 		pdata, err := tp.BuildTemplateData(p.appDir)
 		if err != nil {

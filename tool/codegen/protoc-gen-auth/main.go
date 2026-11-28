@@ -97,7 +97,7 @@ func main() {
 	})
 }
 
-// generateMethods generates the []*Method from []*protogen.Method for pasing template.
+// generateMethods generates the []*Method from []*protogen.Method for passing template.
 // The MessageOptions as provided by protoc does not know about dynamically created extensions,
 // so they are left as unknown fields. We round-trip marshal and unmarshal the options
 // with a dynamically created resolver that does know about extensions at runtime.

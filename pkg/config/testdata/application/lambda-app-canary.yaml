@@ -15,7 +15,7 @@ spec:
         with:
           percent: 10
       # Change the traffic routing state where
-      # thre new version will receive 100% of the traffic.
+      # The new version will receive 100% of the traffic.
       - name: LAMBDA_PROMOTE
         with:
           percent: 100

@@ -596,7 +596,7 @@ guarantee to take exactly these actions if you run "terraform apply" now.
 			wantErr: false,
 		},
 		{
-			name: "chages made outside of Terraform",
+			name: "changes made outside of Terraform",
 			planDetails: `terraform init -no-color
 Initializing the backend...
 

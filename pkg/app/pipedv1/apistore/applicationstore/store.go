@@ -32,7 +32,7 @@ type Lister interface {
 	// List lists all applications that should be handled by this piped.
 	// All disabled applications will be ignored.
 	List() []*model.Application
-	// Get retrieves a specifiec deployment for the given id.
+	// Get retrieves a specific deployment for the given id.
 	Get(id string) (*model.Application, bool)
 }
 

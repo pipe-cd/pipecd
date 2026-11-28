@@ -20,7 +20,7 @@ spec:
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
       # Change the traffic routing state where
-      # thre new version will receive 100% of the traffic.
+      # The new version will receive 100% of the traffic.
       - name: CLOUDRUN_PROMOTE
         with:
           canary: 100

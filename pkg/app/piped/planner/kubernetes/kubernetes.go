@@ -131,7 +131,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// If the progressive pipeline was not configured
-	// we have only one choise to do is applying all manifestt.
+	// we have only one choice to do is applying all manifestt.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())

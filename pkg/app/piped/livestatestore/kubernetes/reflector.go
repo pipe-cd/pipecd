@@ -165,7 +165,7 @@ func (r *reflector) start(_ context.Context) error {
 		zap.Any("namespacedTargetResources", namespacedTargetResources),
 	)
 
-	// Use dynamic to perform generic operations on arbitrary Kubernets API objects.
+	// Use dynamic to perform generic operations on arbitrary Kubernetes API objects.
 	// https://godoc.org/k8s.io/client-go/dynamic
 	dynamicClient, err := dynamic.NewForConfig(r.kubeConfig)
 	if err != nil {

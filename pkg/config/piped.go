@@ -779,7 +779,7 @@ func (p *PipedAnalysisProvider) Validate() error {
 	case model.AnalysisProviderStackdriver:
 		return p.StackdriverConfig.Validate()
 	default:
-		return fmt.Errorf("unknow provider type: %s", p.Type)
+		return fmt.Errorf("unknown provider type: %s", p.Type)
 	}
 }
 

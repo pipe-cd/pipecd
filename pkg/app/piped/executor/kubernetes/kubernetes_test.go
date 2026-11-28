@@ -218,7 +218,7 @@ spec:
 			expected: fmt.Errorf("require primary but got canary for pipecd.dev/variant key in spec.selector.matchLabels"),
 		},
 		{
-			name: "wrong variant in temlate labels",
+			name: "wrong variant in template labels",
 			manifest: `
 apiVersion: apps/v1
 kind: Deployment

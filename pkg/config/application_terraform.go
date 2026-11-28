@@ -33,7 +33,7 @@ func (s *TerraformApplicationSpec) Validate() error {
 
 type TerraformDeploymentInput struct {
 	// The terraform workspace name.
-	// Empty means "default" workpsace.
+	// Empty means "default" workspace.
 	Workspace string `json:"workspace,omitempty"`
 	// The version of terraform should be used.
 	// Empty means the pre-installed version will be used.

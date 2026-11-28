@@ -27,7 +27,7 @@ import (
 const (
 	// Issuer is the name of the issuer for PipeCD token.
 	Issuer = "PipeCD"
-	// SignedTokenKey is the name of singed token key in cookie.
+	// SignedTokenKey is the name of signed token key in cookie.
 	SignedTokenKey = "token"
 )
 

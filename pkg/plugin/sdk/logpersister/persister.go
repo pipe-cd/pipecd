@@ -72,7 +72,7 @@ type persister struct {
 }
 
 // NewPersister creates a new persister instance for saving the stage logs into server's storage.
-// This controls how many concurent api calls should be executed and when to flush the logs.
+// This controls how many concurrent api calls should be executed and when to flush the logs.
 func NewPersister(apiClient apiClient, logger *zap.Logger) *persister {
 	return &persister{
 		apiClient:               apiClient,

@@ -91,7 +91,7 @@ spec:
 `,
 		},
 		{
-			name: "wrong variant in temlate labels",
+			name: "wrong variant in template labels",
 			manifest: `
 apiVersion: apps/v1
 kind: Deployment

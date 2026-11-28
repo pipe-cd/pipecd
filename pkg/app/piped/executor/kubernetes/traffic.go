@@ -157,7 +157,7 @@ func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName stri
 		return findIstioVirtualServiceManifests(manifests, istioConfig.VirtualService)
 
 	default:
-		return nil, fmt.Errorf("unsupport traffic routing method %v", method)
+		return nil, fmt.Errorf("unsupported traffic routing method %v", method)
 	}
 }
 

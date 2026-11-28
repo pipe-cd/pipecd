@@ -89,7 +89,7 @@ func TestSourceProcessor(t *testing.T) {
 			},
 		},
 		{
-			name: "secret decryption combined attachement",
+			name: "secret decryption combined attachment",
 			fileData: map[string]string{
 				"config.yaml":   "{{ .encryptedSecrets.secret }}",
 				"resource.yaml": "echo {{ .attachment.config }}",

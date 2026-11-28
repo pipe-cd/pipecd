@@ -507,7 +507,7 @@ func TestProject_DeleteUserGroup(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "the user group doen't exist",
+			name: "the user group doesn't exist",
 			args: args{
 				sso: "team/admin",
 			},

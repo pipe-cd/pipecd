@@ -35,7 +35,7 @@ func (t *Trigger) triggerDeployment(
 	if _, err := t.apiClient.CreateDeployment(ctx, &pipedservice.CreateDeploymentRequest{
 		Deployment: deployment,
 	}); err != nil {
-		return fmt.Errorf("cound not register a new deployment to control-plane: %w", err)
+		return fmt.Errorf("could not register a new deployment to control-plane: %w", err)
 	}
 	return nil
 }

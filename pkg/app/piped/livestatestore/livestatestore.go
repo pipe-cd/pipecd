@@ -78,15 +78,15 @@ type ecsStore interface {
 
 // store manages a list of particular stores for all cloud providers.
 type store struct {
-	// Map thats contains a list of kubernetesStore where key is the cloud provider name.
+	// Map that contains a list of kubernetesStore where key is the cloud provider name.
 	kubernetesStores map[string]kubernetesStore
-	// Map thats contains a list of terraformStore where key is the cloud provider name.
+	// Map that contains a list of terraformStore where key is the cloud provider name.
 	terraformStores map[string]terraformStore
-	// Map thats contains a list of cloudRunStore where key is the cloud provider name.
+	// Map that contains a list of cloudRunStore where key is the cloud provider name.
 	cloudrunStores map[string]cloudRunStore
-	// Map thats contains a list of lambdaStore where key is the cloud provider name.
+	// Map that contains a list of lambdaStore where key is the cloud provider name.
 	lambdaStores map[string]lambdaStore
-	// Map thats contains a list of ecsStore where key is the cloud provider name.
+	// Map that contains a list of ecsStore where key is the cloud provider name.
 	ecsStores map[string]ecsStore
 
 	gracePeriod time.Duration

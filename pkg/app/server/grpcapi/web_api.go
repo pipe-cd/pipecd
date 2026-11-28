@@ -1297,7 +1297,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	}, nil
 }
 
-// GetProject gets the specified porject without sensitive data.
+// GetProject gets the specified project without sensitive data.
 func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {

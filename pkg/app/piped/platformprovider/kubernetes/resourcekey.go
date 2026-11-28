@@ -209,7 +209,7 @@ func (k ResourceKey) IsLess(a ResourceKey) bool {
 }
 
 // IsLessWithIgnoringNamespace reports whether the key should sort before the given key,
-// but this ignores the comparation of the namesapce.
+// but this ignores the comparison of the namespace.
 func (k ResourceKey) IsLessWithIgnoringNamespace(a ResourceKey) bool {
 	if k.APIVersion < a.APIVersion {
 		return true
@@ -232,7 +232,7 @@ func (k ResourceKey) IsLessWithIgnoringNamespace(a ResourceKey) bool {
 }
 
 // IsEqualWithIgnoringNamespace checks whether the key is equal to the given key,
-// but this ignores the comparation of the namesapce.
+// but this ignores the comparison of the namespace.
 func (k ResourceKey) IsEqualWithIgnoringNamespace(a ResourceKey) bool {
 	if k.APIVersion != a.APIVersion {
 		return false

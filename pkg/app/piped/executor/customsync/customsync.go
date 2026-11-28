@@ -97,7 +97,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 func (e *deployExecutor) executeCommand() model.StageStatus {
 	opts := e.StageConfig.CustomSyncOptions
 
-	e.LogPersister.Infof("Runnnig commands...")
+	e.LogPersister.Infof("Running commands...")
 	for v := range strings.SplitSeq(opts.Run, "\n") {
 		if v != "" {
 			e.LogPersister.Infof("   %s", v)

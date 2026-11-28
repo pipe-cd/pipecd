@@ -36,7 +36,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	}
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.Infof("Loading manifests at trigered commit %s for handling", e.commit)
+	e.LogPersister.Infof("Loading manifests at triggered commit %s for handling", e.commit)
 	manifests, err := loadManifests(
 		ctx,
 		e.Deployment.ApplicationId,
