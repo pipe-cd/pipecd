@@ -16,6 +16,8 @@ package provider
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -159,6 +161,12 @@ func TestVerifyHelmValueFilePath(t *testing.T) {
 			valueFilePath: "invalid-symlink",
 			wantErr:       true,
 		},
+		{
+			name:          "Values file in sibling directory with matching prefix",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "../appconfdir-sibling/values.yaml",
+			wantErr:       true,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -171,4 +179,81 @@ func TestVerifyHelmValueFilePath(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestVerifyHelmValueFilePath_TraversalAndSymlinks(t *testing.T) {
+	t.Parallel()
+
+	rootDir := t.TempDir()
+	appDir := filepath.Join(rootDir, "app")
+	subDir := filepath.Join(appDir, "sub")
+	siblingDir := filepath.Join(rootDir, "app-secrets")
+	outsideDir := filepath.Join(rootDir, "outside")
+
+	require.NoError(t, os.MkdirAll(subDir, 0o755))
+	require.NoError(t, os.MkdirAll(siblingDir, 0o755))
+	require.NoError(t, os.MkdirAll(outsideDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(appDir, "values.yaml"), []byte("ok: true\n"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(siblingDir, "values.yaml"), []byte("secret: true\n"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(outsideDir, "secret.yaml"), []byte("secret: true\n"), 0o600))
+
+	t.Run("absolute path with parent traversal escaping appDir", func(t *testing.T) {
+		t.Parallel()
+		uncleaned := appDir + string(filepath.Separator) + ".." + string(filepath.Separator) + "outside" + string(filepath.Separator) + "secret.yaml"
+		require.Error(t, verifyHelmValueFilePath(appDir, uncleaned))
+	})
+
+	t.Run("sibling directory sharing appDir prefix via relative path", func(t *testing.T) {
+		t.Parallel()
+		require.Error(t, verifyHelmValueFilePath(appDir, filepath.Join("..", "app-secrets", "values.yaml")))
+	})
+
+	t.Run("sibling directory sharing appDir prefix via absolute path", func(t *testing.T) {
+		t.Parallel()
+		require.Error(t, verifyHelmValueFilePath(appDir, filepath.Join(siblingDir, "values.yaml")))
+	})
+
+	// Test symlink scenarios when the OS/filesystem allows creating symlinks.
+	validSubSymlink := filepath.Join(subDir, "valid-link.yaml")
+	if err := os.Symlink(filepath.Join("..", "values.yaml"), validSubSymlink); err != nil {
+		t.Skipf("symlinks unavailable in this environment: %v", err)
+	}
+	escapeSubSymlink := filepath.Join(subDir, "escape-link.yaml")
+	require.NoError(t, os.Symlink(filepath.Join("..", "..", "outside", "secret.yaml"), escapeSubSymlink))
+
+	chainedTarget := filepath.Join(appDir, "chain-mid.yaml")
+	chainedStart := filepath.Join(appDir, "chain-start.yaml")
+	require.NoError(t, os.Symlink(filepath.Join("..", "outside", "secret.yaml"), chainedTarget))
+	require.NoError(t, os.Symlink("chain-mid.yaml", chainedStart))
+
+	symlinkedSubDir := filepath.Join(appDir, "linked-dir")
+	require.NoError(t, os.Symlink(outsideDir, symlinkedSubDir))
+
+	danglingEscape := filepath.Join(subDir, "dangling-escape.yaml")
+	require.NoError(t, os.Symlink(filepath.Join("..", "..", "outside", "missing.yaml"), danglingEscape))
+
+	t.Run("subdirectory relative symlink inside appDir", func(t *testing.T) {
+		t.Parallel()
+		require.NoError(t, verifyHelmValueFilePath(appDir, filepath.Join("sub", "valid-link.yaml")))
+	})
+
+	t.Run("subdirectory relative symlink escaping appDir", func(t *testing.T) {
+		t.Parallel()
+		require.Error(t, verifyHelmValueFilePath(appDir, filepath.Join("sub", "escape-link.yaml")))
+	})
+
+	t.Run("chained symlink escaping appDir", func(t *testing.T) {
+		t.Parallel()
+		require.Error(t, verifyHelmValueFilePath(appDir, "chain-start.yaml"))
+	})
+
+	t.Run("symlinked subdirectory escaping appDir", func(t *testing.T) {
+		t.Parallel()
+		require.Error(t, verifyHelmValueFilePath(appDir, filepath.Join("linked-dir", "secret.yaml")))
+	})
+
+	t.Run("dangling symlink in subdirectory escaping appDir", func(t *testing.T) {
+		t.Parallel()
+		require.Error(t, verifyHelmValueFilePath(appDir, filepath.Join("sub", "dangling-escape.yaml")))
+	})
 }
