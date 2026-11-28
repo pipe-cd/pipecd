@@ -26,34 +26,6 @@ import (
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
-var builtinAPIGroups = map[string]struct{}{
-	"admissionregistration.k8s.io": {},
-	"apiextensions.k8s.io":         {},
-	"apiregistration.k8s.io":       {},
-	"apps":                         {},
-	"authentication.k8s.io":        {},
-	"authorization.k8s.io":         {},
-	"autoscaling":                  {},
-	"batch":                        {},
-	"certificates.k8s.io":          {},
-	"coordination.k8s.io":          {},
-	"extensions":                   {},
-	"internal.autoscaling.k8s.io":  {},
-	"metrics.k8s.io":               {},
-	"networking.k8s.io":            {},
-	"node.k8s.io":                  {},
-	"policy":                       {},
-	"rbac.authorization.k8s.io":    {},
-	"scheduling.k8s.io":            {},
-	"storage.k8s.io":               {},
-	"":                             {},
-}
-
-func isBuiltinAPIGroup(apiGroup string) bool {
-	_, ok := builtinAPIGroups[apiGroup]
-	return ok
-}
-
 // Manifest represents a Kubernetes resource manifest.
 type Manifest struct {
 	body *unstructured.Unstructured
@@ -136,90 +108,80 @@ func (m Manifest) Name() string {
 	return m.body.GetName()
 }
 
-// IsWorkload returns true if the manifest is a Deployment, StatefulSet, or DaemonSet.
+// IsWorkload returns true if the manifest is a Deployment, StatefulSet, DaemonSet, ReplicaSet, or Pod.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsWorkload() bool {
-	// TODO: check the API group more strictly.
-	if !isBuiltinAPIGroup(m.body.GroupVersionKind().Group) {
-		return false
-	}
-
-	switch m.body.GetKind() {
-	case KindDeployment, KindReplicaSet, KindDaemonSet, KindPod, KindStatefulSet:
-		return true
-	default:
-		return false
-	}
+	return m.IsDeployment() || m.IsReplicaSet() || m.IsDaemonSet() || m.IsPod() || m.IsStatefulSet()
 }
 
 // IsService returns true if the manifest is a Service.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsService() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindService
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "" && gvk.Kind == KindService
 }
 
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDeployment
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "apps" && gvk.Kind == KindDeployment
 }
 
 // IsStatefulSet returns true if the manifest is a StatefulSet.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsStatefulSet() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindStatefulSet
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "apps" && gvk.Kind == KindStatefulSet
 }
 
 // IsReplicaSet returns true if the manifest is a ReplicaSet.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsReplicaSet() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindReplicaSet
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "apps" && gvk.Kind == KindReplicaSet
 }
 
 // IsDaemonSet returns true if the manifest is a DaemonSet.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDaemonSet() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDaemonSet
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "apps" && gvk.Kind == KindDaemonSet
 }
 
 // IsPod returns true if the manifest is a Pod.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsPod() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindPod
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "" && gvk.Kind == KindPod
 }
 
 // IsJob returns true if the manifest is a Job.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsJob() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindJob
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "batch" && gvk.Kind == KindJob
 }
 
 // IsCronJob returns true if the manifest is a CronJob.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsCronJob() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindCronJob
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "batch" && gvk.Kind == KindCronJob
 }
 
 // IsSecret returns true if the manifest is a Secret.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsSecret() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindSecret
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "" && gvk.Kind == KindSecret
 }
 
 // IsConfigMap returns true if the manifest is a ConfigMap.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsConfigMap() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindConfigMap
+	gvk := m.body.GroupVersionKind()
+	return gvk.Group == "" && gvk.Kind == KindConfigMap
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
