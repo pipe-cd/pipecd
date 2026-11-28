@@ -205,14 +205,23 @@ func FindImageTag(fm FunctionManifest) (string, error) {
 	return tag, nil
 }
 
+// parseContainerImage returns the image name and its version.
+// The version is the digest when the image is pinned by digest
+// ([registry/]name[:tag]@digest), otherwise the tag.
 func parseContainerImage(image string) (name, tag string) {
+	ref, digest, _ := strings.Cut(image, "@")
+
 	// Look for the tag only in the last path segment, so that a registry
 	// port such as "localhost:5000" is not taken as the tag.
-	paths := strings.Split(image, "/")
+	paths := strings.Split(ref, "/")
 	name = paths[len(paths)-1]
 	if idx := strings.LastIndex(name, ":"); idx != -1 {
 		tag = name[idx+1:]
 		name = name[:idx]
+	}
+
+	if digest != "" {
+		tag = digest
 	}
 	return
 }
