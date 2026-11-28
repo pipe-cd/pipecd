@@ -62,11 +62,22 @@ func TestMergeVars(t *testing.T) {
 			want:             []string{"key1=value1", "key2=value2", "key3=value3", "key4=value4"},
 		},
 		{
-			// TODO: Validate duplication ans the want should not contain "key2=valueX"
 			name:             "duplicate vars",
 			deployTargetVars: []string{"key1=value1", "key2=value2"},
 			appVars:          []string{"key2=valueX", "key3=value3"},
-			want:             []string{"key1=value1", "key2=value2", "key2=valueX", "key3=value3"},
+			want:             []string{"key1=value1", "key2=value2", "key3=value3"},
+		},
+		{
+			name:             "duplicate vars with equals in value",
+			deployTargetVars: []string{"key1=a=b"},
+			appVars:          []string{"key1=c=d", "key2=e=f"},
+			want:             []string{"key1=a=b", "key2=e=f"},
+		},
+		{
+			name:             "duplicate within same slice",
+			deployTargetVars: []string{"key1=value1", "key1=value2"},
+			appVars:          []string{"key3=value3", "key3=value4"},
+			want:             []string{"key1=value1", "key3=value3"},
 		},
 	}
 
