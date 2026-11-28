@@ -413,6 +413,50 @@ spec:
 			expectedErr: false,
 		},
 		{
+			name: "[From container image] ok: using container image pinned by digest",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleFunction
+  image: ecr.ap-northeast-1.amazonaws.com/lambda-test@sha256:0b69ad6f
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "sha256:0b69ad6f",
+					Name:    "lambda-test",
+					Url:     "ecr.ap-northeast-1.amazonaws.com/lambda-test@sha256:0b69ad6f",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From container image] ok: using container image with tag and digest",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleFunction
+  image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1@sha256:0b69ad6f
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "sha256:0b69ad6f",
+					Name:    "lambda-test",
+					Url:     "ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1@sha256:0b69ad6f",
+				},
+			},
+			expectedErr: false,
+		},
+		{
 			name: "[From container image] error: no image name",
 			input: []byte(`
 apiVersion: pipecd.dev/v1beta1
