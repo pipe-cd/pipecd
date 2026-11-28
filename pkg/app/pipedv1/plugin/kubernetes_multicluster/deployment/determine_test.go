@@ -64,67 +64,67 @@ func TestParseContainerImage(t *testing.T) {
 		{
 			name:  "image with tag",
 			image: "nginx:1.19.3",
-			want:  containerImage{name: "nginx", tag: "1.19.3"},
+			want:  containerImage{repository: "nginx", name: "nginx", tag: "1.19.3"},
 		},
 		{
 			name:  "image without tag",
 			image: "nginx",
-			want:  containerImage{name: "nginx", tag: ""},
+			want:  containerImage{repository: "nginx", name: "nginx", tag: ""},
 		},
 		{
 			name:  "image with tag and registry",
 			image: "docker.io/nginx:1.19.3",
-			want:  containerImage{name: "nginx", tag: "1.19.3"},
+			want:  containerImage{repository: "docker.io/nginx", name: "nginx", tag: "1.19.3"},
 		},
 		{
 			name:  "image with tag and repository",
 			image: "myrepo/nginx:1.19.3",
-			want:  containerImage{name: "nginx", tag: "1.19.3"},
+			want:  containerImage{repository: "myrepo/nginx", name: "nginx", tag: "1.19.3"},
 		},
 		{
 			name:  "image with tag, registry and repository",
 			image: "docker.io/myrepo/nginx:1.19.3",
-			want:  containerImage{name: "nginx", tag: "1.19.3"},
+			want:  containerImage{repository: "docker.io/myrepo/nginx", name: "nginx", tag: "1.19.3"},
 		},
 		{
 			name:  "image without tag, with registry and repository",
 			image: "docker.io/myrepo/nginx",
-			want:  containerImage{name: "nginx", tag: ""},
+			want:  containerImage{repository: "docker.io/myrepo/nginx", name: "nginx", tag: ""},
 		},
 		{
 			name:  "registry with port and tag",
 			image: "my-registry:5000/app:latest",
-			want:  containerImage{name: "app", tag: "latest"},
+			want:  containerImage{repository: "my-registry:5000/app", name: "app", tag: "latest"},
 		},
 		{
 			name:  "registry with port, no tag",
 			image: "my-registry:5000/app",
-			want:  containerImage{name: "app"},
+			want:  containerImage{repository: "my-registry:5000/app", name: "app"},
 		},
 		{
 			name:  "digest only, no tag",
 			image: "nginx@sha256:abcdef1234567890",
-			want:  containerImage{name: "nginx", digest: "sha256:abcdef1234567890"},
+			want:  containerImage{repository: "nginx", name: "nginx", digest: "sha256:abcdef1234567890"},
 		},
 		{
 			name:  "registry with digest",
 			image: "gcr.io/myproject/myapp@sha256:abcdef1234567890",
-			want:  containerImage{name: "myapp", digest: "sha256:abcdef1234567890"},
+			want:  containerImage{repository: "gcr.io/myproject/myapp", name: "myapp", digest: "sha256:abcdef1234567890"},
 		},
 		{
 			name:  "multi-level path with tag",
 			image: "gcr.io/project-id/subpath/app:1.0",
-			want:  containerImage{name: "app", tag: "1.0"},
+			want:  containerImage{repository: "gcr.io/project-id/subpath/app", name: "app", tag: "1.0"},
 		},
 		{
 			name:  "name with tag and digest",
 			image: "nginx:1.27@sha256:abcdef1234567890",
-			want:  containerImage{name: "nginx", tag: "1.27", digest: "sha256:abcdef1234567890"},
+			want:  containerImage{repository: "nginx", name: "nginx", tag: "1.27", digest: "sha256:abcdef1234567890"},
 		},
 		{
 			name:  "registry with port, tag and digest",
 			image: "my-registry:5000/app:1.0@sha256:abcdef1234567890",
-			want:  containerImage{name: "app", tag: "1.0", digest: "sha256:abcdef1234567890"},
+			want:  containerImage{repository: "my-registry:5000/app", name: "app", tag: "1.0", digest: "sha256:abcdef1234567890"},
 		},
 	}
 
@@ -652,6 +652,35 @@ spec:
 			wantOk: true,
 		},
 		{
+			name: "image moved to another registry with the same tag",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  template:
+    spec:
+      containers:
+      - name: web
+        image: ghcr.io/org/web:1.0
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  template:
+    spec:
+      containers:
+      - name: web
+        image: docker.io/org/web:1.0
+`,
+			want:   "Sync progressively because of updating image web from ghcr.io/org/web:1.0 to docker.io/org/web:1.0",
+			wantOk: true,
+		},
+		{
 			name: "image name changed",
 			old: `
 apiVersion: apps/v1
@@ -677,7 +706,7 @@ spec:
       - name: redis
         image: redis:6.0.9
 `,
-			want:   "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9",
+			want:   "Sync progressively because of updating image nginx from nginx:1.19.3 to redis:6.0.9",
 			wantOk: true,
 		},
 		{
@@ -772,7 +801,7 @@ spec:
       - name: nginx
         image: nginx:1.19.3
 `,
-			want:   "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9, image redis:6.0.9 to nginx:1.19.3",
+			want:   "Sync progressively because of updating image nginx from nginx:1.19.3 to redis:6.0.9, image redis from redis:6.0.9 to nginx:1.19.3",
 			wantOk: true,
 		},
 	}
@@ -1312,7 +1341,7 @@ spec:
 `,
 			},
 			wantStrategy: sdk.SyncStrategyPipelineSync,
-			wantSummary:  "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9, image redis:6.0.9 to nginx:1.19.3",
+			wantSummary:  "Sync progressively because of updating image nginx from nginx:1.19.3 to redis:6.0.9, image redis from redis:6.0.9 to nginx:1.19.3",
 		},
 		{
 			name: "workloadRef specified",

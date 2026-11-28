@@ -29,9 +29,11 @@ import (
 )
 
 type containerImage struct {
-	name   string
-	tag    string
-	digest string
+	// repository is the image reference without the tag or digest.
+	repository string
+	name       string
+	tag        string
+	digest     string
 }
 
 // parseContainerImage parses a container image reference into its components.
@@ -53,6 +55,8 @@ func parseContainerImage(image string) (img containerImage) {
 		last = last[:idx]
 	}
 
+	parts[len(parts)-1] = last
+	img.repository = strings.Join(parts, "/")
 	img.name = last
 	return
 }
@@ -144,7 +148,9 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 			afterVer = afterImg.tag
 		}
 
-		if beforeImg.name == afterImg.name {
+		if beforeImg.repository != afterImg.repository {
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, n.StringX(), n.StringY()))
+		} else if beforeImg.name == afterImg.name {
 			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeVer, afterVer))
 		} else {
 			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeVer, afterImg.name, afterVer))
