@@ -35,7 +35,7 @@ const (
 
 	// annotations
 	AnnotationOrder      = "pipecd.dev/order"       // The order number of resource used to sort them before using.
-	AnnotationConfigHash = "pipecd.dev/config-hash" // The hash value of all mouting config resources.
+	AnnotationConfigHash = "pipecd.dev/config-hash" // The hash value of all mounting config resources.
 
 	// label/annotation values
 	ManagedByPiped           = "piped"

@@ -50,7 +50,7 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 			expectedFile: "testdata/generated-virtual-service.yaml",
 		},
 		{
-			name:           "apply only speficied routes",
+			name:           "apply only specified routes",
 			manifestFile:   "testdata/virtual-service.yaml",
 			editableRoutes: []string{"only-primary-destination"},
 			expectedFile:   "testdata/generated-virtual-service-for-editable-routes.yaml",

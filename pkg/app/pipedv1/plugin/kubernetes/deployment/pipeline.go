@@ -45,7 +45,7 @@ const (
 	// the BASELINE variant resources has been cleaned.
 	StageK8sBaselineClean = "K8S_BASELINE_CLEAN"
 	// StageK8sTrafficRouting represents the state where the traffic to application
-	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
+	// should be split as the specified percentage to PRIMARY, CANARY, BASELINE variants.
 	StageK8sTrafficRouting = "K8S_TRAFFIC_ROUTING"
 	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
 	StageK8sRollback = "K8S_ROLLBACK"

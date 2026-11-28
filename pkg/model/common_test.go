@@ -56,7 +56,7 @@ func TestApplicationGitPathValidate(t *testing.T) {
 				Repo: &ApplicationGitRepository{
 					Id: "id",
 				},
-				Path: "kuberntes/simple",
+				Path: "kubernetes/simple",
 			},
 		},
 	}

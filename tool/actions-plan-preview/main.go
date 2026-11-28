@@ -119,7 +119,7 @@ func _main() int {
 	// TODO: When PR opened, `Mergeable` is nil for calculation.
 	// Here it is not considered for now, but needs to be handled.
 	if event.PRMergeable != nil && !*event.PRMergeable {
-		return doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
+		return doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conflicts and try again.")
 	}
 
 	result, err := retrievePlanPreview(

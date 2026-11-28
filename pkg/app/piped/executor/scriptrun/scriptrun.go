@@ -95,7 +95,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 func (e *Executor) executeCommand() model.StageStatus {
 	opts := e.StageConfig.ScriptRunStageOptions
 
-	e.LogPersister.Infof("Runnnig commands...")
+	e.LogPersister.Infof("Running commands...")
 	for v := range strings.SplitSeq(opts.Run, "\n") {
 		if v != "" {
 			e.LogPersister.Infof("   %s", v)
@@ -105,7 +105,7 @@ func (e *Executor) executeCommand() model.StageStatus {
 	ci := NewContextInfo(e.Deployment, false)
 	ciEnv, err := ci.BuildEnv()
 	if err != nil {
-		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
+		e.LogPersister.Errorf("failed to build script run context info: %w", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 

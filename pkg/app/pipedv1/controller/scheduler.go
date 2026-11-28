@@ -446,7 +446,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 			break
 		}
 
-		s.logger.Info("stop scheduler because of temination signal", zap.String("stage-id", ps.Id))
+		s.logger.Info("stop scheduler because of termination signal", zap.String("stage-id", ps.Id))
 		return nil
 	}
 
@@ -887,7 +887,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 	return err
 }
 
-// notifyStageStartEvent sends notification evnet STAGE_STARTED
+// notifyStageStartEvent sends notification event STAGE_STARTED
 func (s *scheduler) notifyStageStartEvent(stage *model.PipelineStage) {
 	s.notifier.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_STAGE_STARTED,

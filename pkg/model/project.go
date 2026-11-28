@@ -541,7 +541,7 @@ func (p *Project) DeleteRBACRole(name string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("%s role does nott exist", name)
+	return fmt.Errorf("%s role does not exist", name)
 }
 
 func (p *ProjectRBACRole) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {

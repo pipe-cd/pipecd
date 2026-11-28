@@ -398,7 +398,7 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Worktree, headCo
 	if encryptionUsed {
 		templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gds.Encryption, d.secretDecrypter))
 	}
-	// Then attaching configurated files to manifests.
+	// Then attaching configured files to manifests.
 	if attachmentUsed {
 		templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gds.Attachment))
 	}

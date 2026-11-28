@@ -81,7 +81,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 func (e *rollbackExecutor) executeCommand(config config.PipelineStage) model.StageStatus {
 	opts := config.CustomSyncOptions
 
-	e.LogPersister.Infof("Runnnig commands...")
+	e.LogPersister.Infof("Running commands...")
 	for v := range strings.SplitSeq(opts.Run, "\n") {
 		if v != "" {
 			e.LogPersister.Infof("   %s", v)

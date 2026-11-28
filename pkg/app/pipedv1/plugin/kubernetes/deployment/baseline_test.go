@@ -228,7 +228,7 @@ func TestPlugin_executeK8sBaselineCleanStage_withCreateService(t *testing.T) {
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
 				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					ApplicationDirectory:      configDir, // it's weird that the same directory is used for both running and target, but it's ok for the test
 					CommitHash:                "0123456789",
 					ApplicationConfig:         appCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
@@ -274,7 +274,7 @@ func TestPlugin_executeK8sBaselineCleanStage_withCreateService(t *testing.T) {
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
 				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					ApplicationDirectory:      configDir, // it's weird that the same directory is used for both running and target, but it's ok for the test
 					CommitHash:                "0123456789",
 					ApplicationConfig:         appCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
@@ -320,7 +320,7 @@ func TestPlugin_executeK8sBaselineCleanStage_withCreateService(t *testing.T) {
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
 				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					ApplicationDirectory:      configDir, // it's weird that the same directory is used for both running and target, but it's ok for the test
 					CommitHash:                "0123456789",
 					ApplicationConfig:         appCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
@@ -399,7 +399,7 @@ func TestPlugin_executeK8sBaselineCleanStage_withoutCreateService(t *testing.T) 
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
 				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					ApplicationDirectory:      configDir, // it's weird that the same directory is used for both running and target, but it's ok for the test
 					CommitHash:                "0123456789",
 					ApplicationConfig:         appCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
@@ -445,7 +445,7 @@ func TestPlugin_executeK8sBaselineCleanStage_withoutCreateService(t *testing.T) 
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
 				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					ApplicationDirectory:      configDir, // it's weird that the same directory is used for both running and target, but it's ok for the test
 					CommitHash:                "0123456789",
 					ApplicationConfig:         appCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
@@ -491,7 +491,7 @@ func TestPlugin_executeK8sBaselineCleanStage_withoutCreateService(t *testing.T) 
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
 				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					ApplicationDirectory:      configDir, // it's weird that the same directory is used for both running and target, but it's ok for the test
 					CommitHash:                "0123456789",
 					ApplicationConfig:         appCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",

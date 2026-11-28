@@ -214,7 +214,7 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 				converted++
 			}
 			if converted > 1 {
-				return fmt.Errorf("multiple plaform providers are not allowed: %s", pluginName)
+				return fmt.Errorf("multiple platform providers are not allowed: %s", pluginName)
 			}
 			merged, err := mergeRawMessages(gc.Spec, pluginConfig)
 			if err != nil {

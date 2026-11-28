@@ -62,7 +62,7 @@ type decrypter interface {
 	Decrypt(encryptedText string) (string, error)
 }
 
-// authHandler handles all imcoming requests about authentication.
+// authHandler handles all incoming requests about authentication.
 type authHandler struct {
 	signer           jwt.Signer
 	decrypter        decrypter

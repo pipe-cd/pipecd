@@ -268,7 +268,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 
 		gds, ok := cfg.GetGenericApplication()
 		if !ok {
-			return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+			return nil, fmt.Errorf("unsupported application kind %s", cfg.Kind)
 		}
 
 		var (
@@ -300,7 +300,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 		if encryptionUsed {
 			templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gds.Encryption, d.secretDecrypter))
 		}
-		// Then attaching configurated files to manifests.
+		// Then attaching configured files to manifests.
 		if attachmentUsed {
 			templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gds.Attachment))
 		}
@@ -439,7 +439,7 @@ func (d *detector) getDriftDetectionConfig(repoDir string, app *model.Applicatio
 	}
 	gds, ok := cfg.GetGenericApplication()
 	if !ok {
-		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+		return nil, fmt.Errorf("unsupported application kind %s", cfg.Kind)
 	}
 
 	return gds.DriftDetection, nil

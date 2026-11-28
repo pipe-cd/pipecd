@@ -100,7 +100,7 @@ func TestDecideStrategy(t *testing.T) {
 			wantDesc:        "Sync progressively because pod template of workload name was changed",
 		},
 		{
-			name: "mutilple workloads: pod template was changed",
+			name: "multiple workloads: pod template was changed",
 			olds: func() []provider.Manifest {
 				m1 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "apps/v1",

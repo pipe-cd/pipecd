@@ -179,7 +179,7 @@ func TestHandleResetPassword(t *testing.T) {
 		},
 		{
 			name:           "wrong-confirmation-id",
-			req:            buildHandleResetPasswordRequest("POST", id, fmt.Sprintf("%s mis match", id)),
+			req:            buildHandleResetPasswordRequest("POST", id, fmt.Sprintf("%s mismatch", id)),
 			expectedStatus: http.StatusOK,
 			expectedBody:   "Confirmation ID doesn&#39;t match",
 			extraMocks: func() {

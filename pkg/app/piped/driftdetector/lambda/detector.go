@@ -214,7 +214,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		Spec:       clonedSpec,
 	}
 
-	// WithIgnoreAddingMapKeys option ignores all of followings:
+	// WithIgnoreAddingMapKeys option ignores all of the following:
 	//  - default value of Architecture
 	//  - default value of EphemeralStorage
 	//  - environments added in live states
@@ -291,7 +291,7 @@ func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Wor
 
 		gds, ok := cfg.GetGenericApplication()
 		if !ok {
-			return provider.FunctionManifest{}, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+			return provider.FunctionManifest{}, fmt.Errorf("unsupported application kind %s", cfg.Kind)
 		}
 
 		var (
@@ -323,7 +323,7 @@ func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Wor
 		if encryptionUsed {
 			templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gds.Encryption, d.secretDecrypter))
 		}
-		// Then attaching configurated files to manifests.
+		// Then attaching configured files to manifests.
 		if attachmentUsed {
 			templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gds.Attachment))
 		}

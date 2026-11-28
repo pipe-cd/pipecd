@@ -182,7 +182,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 }
 
 func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.StageStatus {
-	e.LogPersister.Info("Runnnig commands for rollback...")
+	e.LogPersister.Info("Running commands for rollback...")
 
 	onRollback, ok := e.Stage.Metadata["onRollback"]
 	if !ok {
@@ -217,7 +217,7 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 	ci := scriptrun.NewContextInfo(e.Deployment, true)
 	ciEnv, err := ci.BuildEnv()
 	if err != nil {
-		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
+		e.LogPersister.Errorf("failed to build script run context info: %w", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 

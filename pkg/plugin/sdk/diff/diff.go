@@ -235,14 +235,14 @@ func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 
 	for _, k := range keys {
 		if k.Kind() != reflect.String {
-			return fmt.Errorf("unsupport %v as key type of a map", k.Kind())
+			return fmt.Errorf("unsupported %v as key type of a map", k.Kind())
 		}
 		if _, ok := checks[k.String()]; ok {
 			continue
 		}
 
 		nextValueY := vy.MapIndex(k)
-		// Don't need to check the key existing in the first(LiveManifest) one but missing in the seccond(GitManifest) one
+		// Don't need to check the key existing in the first(LiveManifest) one but missing in the second(GitManifest) one
 		// when IgnoreAddingMapKeys is configured.
 		if d.ignoreAddingMapKeys && !nextValueY.IsValid() {
 			continue

@@ -614,7 +614,7 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 			}
 		}
 
-		// TODO: Anotate config hash into other workload kinds such as DaemonSet, StatefulSet...
+		// TODO: Annotate config hash into other workload kinds such as DaemonSet, StatefulSet...
 	}
 
 	return nil

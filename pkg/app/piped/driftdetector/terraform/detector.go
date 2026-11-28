@@ -185,7 +185,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 
 	gds, ok := cfg.GetGenericApplication()
 	if !ok {
-		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
+		return fmt.Errorf("unsupported application kind %s", cfg.Kind)
 	}
 
 	var (
@@ -217,7 +217,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	if encryptionUsed {
 		templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gds.Encryption, d.secretDecrypter))
 	}
-	// Then attaching configurated files to manifests.
+	// Then attaching configured files to manifests.
 	if attachmentUsed {
 		templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gds.Attachment))
 	}

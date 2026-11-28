@@ -130,7 +130,7 @@ func (u *updater) Run(ctx context.Context) error {
 
 		// Note: Only the deployment of the first block (the deployment which trigger this chain)
 		// is added at the time we created this deployment chain; thus all other deployments
-		// which be counted as "missng deployments" here are triggered and going to be added under
+		// which be counted as "missing deployments" here are triggered and going to be added under
 		// PENDING state, since those deployments are of blocks which have to wait for its previous
 		// blocks completion. We don't need to care about updating those deployment ref status after
 		// they been added here in this interval.
