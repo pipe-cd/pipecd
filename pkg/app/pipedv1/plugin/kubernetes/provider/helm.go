@@ -169,36 +169,63 @@ func (h *Helm) UpdateRepositories(ctx context.Context) error {
 // verifyHelmValueFilePath verifies if the path of the values file references
 // a remote URL or inside the path where the application configuration file (i.e. *.pipecd.yaml) is located.
 func verifyHelmValueFilePath(appDir, valueFilePath string) error {
-	url, err := url.Parse(valueFilePath)
-	if err == nil && url.Scheme != "" {
-		for _, s := range allowedURLSchemes {
-			if strings.EqualFold(url.Scheme, s) {
-				return nil
+	isRooted := filepath.IsAbs(valueFilePath) || strings.HasPrefix(valueFilePath, "/") || strings.HasPrefix(valueFilePath, "\\")
+	if !isRooted {
+		u, err := url.Parse(valueFilePath)
+		if err == nil && u.Scheme != "" {
+			for _, s := range allowedURLSchemes {
+				if strings.EqualFold(u.Scheme, s) {
+					return nil
+				}
 			}
-		}
 
-		return fmt.Errorf("scheme %s is not allowed to load values file", url.Scheme)
+			return fmt.Errorf("scheme %s is not allowed to load values file", u.Scheme)
+		}
+	}
+
+	absAppDir, err := filepath.Abs(appDir)
+	if err != nil {
+		return err
 	}
 
 	// valueFilePath is a path where non-default Helm values file is located.
-	if !filepath.IsAbs(valueFilePath) {
-		valueFilePath = filepath.Join(appDir, valueFilePath)
+	if !isRooted {
+		valueFilePath = filepath.Join(absAppDir, valueFilePath)
+	}
+	absValueFilePath, err := filepath.Abs(valueFilePath)
+	if err != nil {
+		return err
 	}
 
-	if isSymlink(valueFilePath) {
-		if valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, appDir); err != nil {
-			return err
-		}
+	if isOutsideDir(absAppDir, absValueFilePath) {
+		return fmt.Errorf("values file %s references outside the application configuration directory", absValueFilePath)
+	}
+
+	resolvedAppDir, err := resolveSymlinks(absAppDir)
+	if err != nil {
+		return err
+	}
+	resolvedValueFilePath, err := resolveSymlinks(absValueFilePath)
+	if err != nil {
+		return err
 	}
 
 	// If a path outside of appDir is specified as the path for the values file,
 	// it may indicate that someone trying to illegally read a file as values file that
 	// exists in the environment where Piped is running.
-	if !strings.HasPrefix(valueFilePath, appDir) {
-		return fmt.Errorf("values file %s references outside the application configuration directory", valueFilePath)
+	if isOutsideDir(resolvedAppDir, resolvedValueFilePath) {
+		return fmt.Errorf("values file %s references outside the application configuration directory", resolvedValueFilePath)
 	}
 
 	return nil
+}
+
+func isOutsideDir(baseDir, targetPath string) bool {
+	rel, err := filepath.Rel(baseDir, targetPath)
+	if err != nil {
+		return true
+	}
+	return rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
 
 // isSymlink returns the path is whether symbolic link or not.
@@ -211,18 +238,40 @@ func isSymlink(path string) bool {
 	return lstat.Mode()&os.ModeSymlink == os.ModeSymlink
 }
 
-// resolveSymlinkToAbsPath resolves symbolic link to an absolute path.
-func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
-	resolved, err := os.Readlink(path)
-	if err != nil {
+// resolveSymlinks resolves symlinks in path, including dangling symlinks and symlinked ancestors.
+func resolveSymlinks(path string) (string, error) {
+	resolved, err := filepath.EvalSymlinks(path)
+	if err == nil {
+		return resolved, nil
+	}
+	if !errors.Is(err, os.ErrNotExist) {
 		return "", err
 	}
 
-	if !filepath.IsAbs(resolved) {
-		resolved = filepath.Join(absParentDir, resolved)
+	if isSymlink(path) {
+		target, err := os.Readlink(path)
+		if err != nil {
+			return "", err
+		}
+		if !filepath.IsAbs(target) {
+			parent, err := resolveSymlinks(filepath.Dir(path))
+			if err != nil {
+				return "", err
+			}
+			target = filepath.Join(parent, target)
+		}
+		return resolveSymlinks(filepath.Clean(target))
 	}
 
-	return resolved, nil
+	parent := filepath.Dir(path)
+	if parent == path {
+		return path, nil
+	}
+	resolvedParent, err := resolveSymlinks(parent)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(resolvedParent, filepath.Base(path)), nil
 }
 
 type helmRemoteChart struct {
