@@ -280,7 +280,13 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 
 	logger.Info("successfully decided sync strategy for the application", zap.String("strategy", result.SyncStrategy.String()))
 
+	b.buildPluginPlanResults(ctx, logger, app, plugins, pluginTargetDS, pluginRunningDS, result)
+	return
+}
+
+func (b *builder) buildPluginPlanResults(ctx context.Context, logger *zap.Logger, app *model.Application, plugins []pluginapi.PluginClient, targetDS, runningDS *common.DeploymentSource, result *model.ApplicationPlanPreviewResult) {
 	errors := ""
+	noChange := true
 	for _, plugin := range plugins {
 		result.PluginNames = append(result.PluginNames, plugin.Name())
 		res, err := plugin.GetPlanPreview(ctx, &planpreviewapi.GetPlanPreviewRequest{
@@ -288,8 +294,8 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 			ApplicationName:         app.Name,
 			PipedId:                 b.pipedCfg.PipedID,
 			DeployTargets:           app.GetDeployTargetsByPluginName(plugin.Name()),
-			TargetDeploymentSource:  pluginTargetDS,
-			RunningDeploymentSource: pluginRunningDS,
+			TargetDeploymentSource:  targetDS,
+			RunningDeploymentSource: runningDS,
 		})
 		if err != nil {
 			if st, ok := status.FromError(err); ok && st.Code() == codes.Unimplemented {
@@ -306,7 +312,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 				PlanDetails:  r.GetDetails(),
 				DiffLanguage: r.GetDiffLanguage(),
 			})
-			r.NoChange = r.NoChange && result.GetNoChange()
+			noChange = noChange && r.GetNoChange()
 		}
 	}
 
@@ -314,8 +320,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		result.Error = fmt.Sprintf("failed to get plan preview, %+v", errors)
 		return
 	}
-
-	return
+	result.NoChange = noChange && len(result.PluginPlanResults) > 0
 }
 
 func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {

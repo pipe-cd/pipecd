@@ -15,12 +15,20 @@
 package planpreview
 
 import (
+	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	planpreviewapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/planpreview"
 )
 
 type fakeApplicationLister struct {
@@ -126,6 +134,80 @@ func TestListApplications(t *testing.T) {
 
 			got := b.listApplications(tc.repo)
 			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+type fakePlanPreviewPlugin struct {
+	pluginapi.PluginClient
+	name    string
+	results []*planpreviewapi.PlanPreviewResult
+	err     error
+}
+
+func (p *fakePlanPreviewPlugin) Name() string {
+	return p.name
+}
+
+func (p *fakePlanPreviewPlugin) GetPlanPreview(context.Context, *planpreviewapi.GetPlanPreviewRequest, ...grpc.CallOption) (*planpreviewapi.GetPlanPreviewResponse, error) {
+	if p.err != nil {
+		return nil, p.err
+	}
+	return &planpreviewapi.GetPlanPreviewResponse{Results: p.results}, nil
+}
+
+func TestBuildPluginPlanResultsNoChange(t *testing.T) {
+	t.Parallel()
+
+	unchanged := &planpreviewapi.PlanPreviewResult{DeployTarget: "dt", NoChange: true}
+	changed := &planpreviewapi.PlanPreviewResult{DeployTarget: "dt", NoChange: false}
+	unimplemented := &fakePlanPreviewPlugin{name: "unimplemented", err: status.Error(codes.Unimplemented, "")}
+
+	testcases := []struct {
+		name     string
+		plugins  []pluginapi.PluginClient
+		expected bool
+	}{
+		{
+			name: "all results have no change",
+			plugins: []pluginapi.PluginClient{
+				&fakePlanPreviewPlugin{name: "p1", results: []*planpreviewapi.PlanPreviewResult{unchanged, unchanged}},
+				&fakePlanPreviewPlugin{name: "p2", results: []*planpreviewapi.PlanPreviewResult{unchanged}},
+				unimplemented,
+			},
+			expected: true,
+		},
+		{
+			name: "one result has changes",
+			plugins: []pluginapi.PluginClient{
+				&fakePlanPreviewPlugin{name: "p1", results: []*planpreviewapi.PlanPreviewResult{unchanged}},
+				&fakePlanPreviewPlugin{name: "p2", results: []*planpreviewapi.PlanPreviewResult{unchanged, changed}},
+			},
+			expected: false,
+		},
+		{
+			name:     "no plugin supports plan preview",
+			plugins:  []pluginapi.PluginClient{unimplemented},
+			expected: false,
+		},
+		{
+			name: "a plugin fails",
+			plugins: []pluginapi.PluginClient{
+				&fakePlanPreviewPlugin{name: "p1", results: []*planpreviewapi.PlanPreviewResult{unchanged}},
+				&fakePlanPreviewPlugin{name: "p2", err: errors.New("failed")},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			b := &builder{pipedCfg: &config.PipedSpec{}}
+			result := &model.ApplicationPlanPreviewResult{}
+			b.buildPluginPlanResults(context.Background(), zap.NewNop(), &model.Application{}, tc.plugins, nil, nil, result)
+			assert.Equal(t, tc.expected, result.NoChange)
 		})
 	}
 }
